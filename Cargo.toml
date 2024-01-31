@@ -1,0 +1,13 @@
+[package]
+name = "RustenV2"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+console_error_panic_hook = "0.1.7"
+console_log = "0.1.2"
+leptos = { version = "0.6.4", features = ["csr", "nightly"] }
+leptos-use = "0.10.0"
+log = "0.4.20"
