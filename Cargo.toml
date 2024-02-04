@@ -11,3 +11,5 @@ console_log = "0.1.2"
 leptos = { version = "0.6.4", features = ["csr", "nightly"] }
 leptos-use = "0.10.0"
 log = "0.4.20"
+styled = "0.2.0"
+stylist = "0.13.0"

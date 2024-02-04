@@ -2,8 +2,15 @@ use leptos::*;
 use leptos_use::core::Position;
 
 #[derive(Debug, Clone)]
-pub struct DivItem {
+pub struct MoveBoxItem {
     pub key: String,
-    pub value: i32,
-    pub position: Position,
+    pub value: String,
+    pub position: RwSignal<Position>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ConnectionItem {
+    pub key: String,
+    pub from: MoveBoxItem,
+    pub to: MoveBoxItem,
 }
