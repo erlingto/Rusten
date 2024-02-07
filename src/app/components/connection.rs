@@ -1,6 +1,6 @@
-use super::structs::ConnectionItem;
 use leptos::*;
 
+use crate::app::structs::connectionItem::ConnectionItem;
 pub struct LinePosition {
     pub x1: f64,
     pub y1: f64,

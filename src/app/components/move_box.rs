@@ -2,19 +2,25 @@ use crate::app::components::styling::DRAGGABLEBOX;
 use leptos::html::Div;
 use leptos::*;
 use leptos_use::core::Position;
-use leptos_use::{use_draggable_with_options, UseDraggableOptions, UseDraggableReturn};
+use leptos_use::{
+    on_click_outside, use_draggable_with_options, UseDraggableOptions, UseDraggableReturn,
+};
+use styled::tracing::event;
+use web_sys::wasm_bindgen::closure::Closure;
+use web_sys::wasm_bindgen::JsCast;
+use web_sys::Event;
 
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
     id: String,
-    value: String,
+    name: RwSignal<String>,
     position: RwSignal<Position>,
     isConnecting: ReadSignal<bool>,
     onClick: F,
 ) -> impl IntoView {
-    let el = create_node_ref::<Div>();
+    let dragEl = create_node_ref::<Div>();
+    let boxEl = create_node_ref::<Div>();
     let (editable, setEditable) = create_signal(false);
-    let (name, setName) = create_signal(String::from(value.to_string()));
 
     let startDrag = move |e| !(isConnecting.get() || editable.get());
     let toggleEditable = move |_| {
@@ -26,11 +32,15 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
         style: positionStyle,
         ..
     } = use_draggable_with_options(
-        el,
+        dragEl,
         UseDraggableOptions::default()
             .initial_value(position)
             .on_start(move |event| startDrag(event)),
     );
+
+    let stopEditing = on_click_outside(boxEl, move |event| {
+        setEditable(false);
+    });
 
     create_effect(move |_| {
         let currentPosition = Position {
@@ -51,6 +61,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
     view! {
         <div
+            node_ref=boxEl
             id=id.to_string()
             style=move || {
                 format!(
@@ -63,7 +74,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
             on:click=move |_| { onClick() }
         >
 
-            <div style=DRAGGABLEBOX node_ref=el>
+            <div style=DRAGGABLEBOX node_ref=dragEl>
                 <div>{move || format!("{} 🤏", name.get())}</div>
                 <div>
                     <Show when=move || editable.get() fallback=|| ()>
@@ -72,15 +83,8 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
                             style="width: 80%; margin: 0"
                             type="text"
                             prop:value=name.get()
-                            on:change=move |e| setName(event_target_value(&e))
+                            on:change=move |e| name.set(event_target_value(&e))
                         />
-                        <button
-                            class="button small"
-                            title="Close"
-                            on:click=move |_| setEditable.set(false)
-                        >
-                            "𝖷"
-                        </button>
                     </Show>
                     <Show when=move || !editable.get() fallback=|| ()>
                         <p>{name.get()}</p>

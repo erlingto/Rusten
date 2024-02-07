@@ -1,34 +1,19 @@
 use crate::app::components::button::Button;
 use crate::app::components::connection::Connection;
+use crate::app::components::diagramTextBox::DiagramTextBox;
 use crate::app::components::move_box::MoveBox;
-use crate::app::components::structs::{ConnectionItem, MoveBoxItem};
+use crate::app::structs::connectionItem::ConnectionItem;
+use crate::app::structs::moveBoxItem::MoveBoxItem;
 use leptos::*;
 use leptos_use::core::Position;
 use log::debug;
 
 #[component]
-pub fn Canvas() -> impl IntoView {
+pub fn Canvas(width: i32, height: i32) -> impl IntoView {
     let (moveBoxes, setMoveBoxes) = create_signal(Vec::<RwSignal<MoveBoxItem>>::new());
     let (isConnecting, setIsConnecting) = create_signal(false);
     let (connections, setConnections) = create_signal(Vec::<ConnectionItem>::new());
     let (connectionFrom) = create_rw_signal(None::<RwSignal<MoveBoxItem>>);
-
-    let printDiagram = move || {
-        let mut connectionString = String::from(":::mermaid\n");
-        connectionString.push_str("classDiagram\n");
-        moveBoxes.get().iter().for_each(|x| {
-            connectionString.push_str(&format!("class `{}`\n", x.get().value));
-        });
-
-        connections.get().iter().for_each(|x| {
-            connectionString.push_str(&format!(
-                "`{}` --> `{}`",
-                x.clone().from.get().value,
-                x.clone().to.get().value
-            ));
-        });
-        debug!("{}", connectionString);
-    };
 
     let nextPosition = create_rw_signal(Position { x: 20.0, y: 20.0 });
 
@@ -43,7 +28,7 @@ pub fn Canvas() -> impl IntoView {
         let newString = ownedString + borrowedString;
         let Data = create_rw_signal(MoveBoxItem {
             key: newString.clone(),
-            value: String::from(divIds.len().to_string()),
+            value: create_rw_signal(String::from(divIds.len().to_string())),
             position: create_rw_signal(nextPosition),
         });
         divIds.push(Data);
@@ -54,13 +39,13 @@ pub fn Canvas() -> impl IntoView {
         {
             create_rw_signal(MoveBoxItem {
                 key: "div0".to_string(),
-                value: "0".to_string(),
+                value: create_rw_signal(String::from("0")),
                 position: create_rw_signal(Position { x: 20.0, y: 20.0 }),
             })
         },
         create_rw_signal(MoveBoxItem {
             key: "div1".to_string(),
-            value: "1".to_string(),
+            value: create_rw_signal(String::from("1")),
             position: create_rw_signal(Position { x: 200.0, y: 200.0 }),
         }),
     ]);
@@ -73,7 +58,7 @@ pub fn Canvas() -> impl IntoView {
         to: boxes[1],
     }]);
 
-    let connect_2 = move |moveBoxItem: RwSignal<MoveBoxItem>| {
+    let connect = move |moveBoxItem: RwSignal<MoveBoxItem>| {
         if isConnecting.get() {
             if (connectionFrom.get().is_none()) {
                 connectionFrom.set(Some(moveBoxItem));
@@ -93,14 +78,18 @@ pub fn Canvas() -> impl IntoView {
     };
 
     view! {
-        <div style="width: 100%; height: 100%; margin:0 auto;position: absolute">
+        <div style=format!(
+            "width: {}%; height: {}%; margin:0 auto;position: absolute; border:1px solid black",
+            width,
+            height,
+        )>
             <For each=moveBoxes key=|state| state.get().key.clone() let:child>
                 <MoveBox
                     id=child.get().key
-                    value=child.get().value
+                    name=child.get().value
                     position=child.get().position
                     isConnecting=isConnecting
-                    onClick=move || { connect_2(child) }
+                    onClick=move || { connect(child) }
                 />
 
             </For>
@@ -117,8 +106,10 @@ pub fn Canvas() -> impl IntoView {
                 </For>
             </svg>
         </div>
-
-        <div style="margin: 0; position: absolute; bottom: 200px;  right: 45%">
+        <div style="display: inline-block;">
+            <DiagramTextBox connections=connections items=moveBoxes/>
+        </div>
+        <div style="margin: 0; position: absolute; bottom: 50px;  right: 45%">
             <Button
                 onClick=move || {
                     let position = nextPosition.get();
@@ -139,14 +130,6 @@ pub fn Canvas() -> impl IntoView {
                 }
 
                 title=format!("Connecting")
-                signal=Signal::derive(move || isConnecting.get().to_string())
-            />
-            <Button
-                onClick=move || {
-                    printDiagram();
-                }
-
-                title=format!("Print")
                 signal=Signal::derive(move || isConnecting.get().to_string())
             />
         </div>
