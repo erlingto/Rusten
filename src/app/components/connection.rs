@@ -1,6 +1,5 @@
 use super::structs::ConnectionItem;
 use leptos::*;
-use log::debug;
 
 pub struct LinePosition {
     pub x1: f64,
@@ -11,14 +10,14 @@ pub struct LinePosition {
 
 #[component]
 pub fn Connection<F: Fn() -> () + 'static>(onClick: F, data: ConnectionItem) -> impl IntoView {
-    let fromX = create_rw_signal(data.from.position.get().x);
-    let toX = create_rw_signal(data.to.position.get().x);
-    let fromY = create_rw_signal(data.from.position.get().y);
-    let toY = create_rw_signal(data.to.position.get().y);
+    let fromX = create_rw_signal(data.from.get().position.get().x);
+    let toX = create_rw_signal(data.to.get().position.get().x);
+    let fromY = create_rw_signal(data.from.get().position.get().y);
+    let toY = create_rw_signal(data.to.get().position.get().y);
 
     create_effect(move |_| {
-        let newFrom = data.from.position.get();
-        let newTo = data.to.position.get();
+        let newFrom = data.from.get().position.get();
+        let newTo = data.to.get().position.get();
         if (newFrom.x != fromX.get() || newFrom.y != fromY.get()) {
             fromX.set(newFrom.x);
             fromY.set(newFrom.y);
@@ -26,7 +25,6 @@ pub fn Connection<F: Fn() -> () + 'static>(onClick: F, data: ConnectionItem) -> 
         if (newTo.x != toX.get() || newTo.y != toY.get()) {
             toX.set(newTo.x);
             toY.set(newTo.y);
-            debug!("NewTo: {:?}", newTo);
         }
     });
 

@@ -3,26 +3,34 @@ use leptos::html::Div;
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_draggable_with_options, UseDraggableOptions, UseDraggableReturn};
-use log::debug;
 
 #[component]
-pub fn MoveBox(
+pub fn MoveBox<F: Fn() -> () + 'static>(
     id: String,
     value: String,
     position: RwSignal<Position>,
     isConnecting: ReadSignal<bool>,
+    onClick: F,
 ) -> impl IntoView {
     let el = create_node_ref::<Div>();
     let (editable, setEditable) = create_signal(false);
     let (name, setName) = create_signal(String::from(value.to_string()));
 
-    // `style` is a helper string "left: {x}px; top: {y}px;"
+    let startDrag = move |e| !(isConnecting.get() || editable.get());
+    let toggleEditable = move |_| {
+        setEditable(true);
+    };
     let UseDraggableReturn {
         x,
         y,
         style: positionStyle,
         ..
-    } = use_draggable_with_options(el, UseDraggableOptions::default().initial_value(position));
+    } = use_draggable_with_options(
+        el,
+        UseDraggableOptions::default()
+            .initial_value(position)
+            .on_start(move |event| startDrag(event)),
+    );
 
     create_effect(move |_| {
         let currentPosition = Position {
@@ -35,18 +43,12 @@ pub fn MoveBox(
         }
     });
 
-    let toggleEditable = move |_| {
-        debug!("ToggleEditable: {}", editable.get());
-        setEditable(true);
-    };
-
     create_effect(move |_| {
         if isConnecting.get() {
             setEditable(false);
         }
     });
 
-    debug!("ToggleEditable: {}", editable.get());
     view! {
         <div
             id=id.to_string()
@@ -57,6 +59,8 @@ pub fn MoveBox(
                     positionStyle.get(),
                 )
             }
+
+            on:click=move |_| { onClick() }
         >
 
             <div style=DRAGGABLEBOX node_ref=el>

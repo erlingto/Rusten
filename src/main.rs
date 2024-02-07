@@ -1,8 +1,8 @@
 use crate::app::App;
 pub mod app;
 use leptos::*;
-use log::Level;
 use log::debug;
+use log::Level;
 
 fn main() {
     console_log::init_with_level(Level::Debug);

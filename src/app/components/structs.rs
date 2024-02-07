@@ -11,6 +11,6 @@ pub struct MoveBoxItem {
 #[derive(Debug, Clone)]
 pub struct ConnectionItem {
     pub key: String,
-    pub from: MoveBoxItem,
-    pub to: MoveBoxItem,
+    pub from: RwSignal<MoveBoxItem>,
+    pub to: RwSignal<MoveBoxItem>,
 }
