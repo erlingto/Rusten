@@ -2,12 +2,9 @@ use crate::app::components::button::Button;
 use crate::app::components::connection::Connection;
 use crate::app::components::move_box::MoveBox;
 use crate::app::components::structs::{ConnectionItem, MoveBoxItem};
-use leptos::ev::close;
-use leptos::html::S;
 use leptos::*;
 use leptos_use::core::Position;
 use log::debug;
-use web_sys::MouseEvent;
 
 #[component]
 pub fn Canvas() -> impl IntoView {
