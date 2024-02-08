@@ -29,6 +29,11 @@ jobs:
       - name: Build with Trunk
         run: ./trunk build --release
 
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
       - name: "Set up Cloud SDK"
         uses: "google-github-actions/setup-gcloud@v2"
         with:
@@ -38,11 +43,6 @@ jobs:
         run: |
           # Assuming your distribution files are located in a directory named 'dist'
           cp -r dist/* ./public
-
-      - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v0
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Deploy to Google App Engine
         run: |
