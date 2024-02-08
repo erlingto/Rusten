@@ -16,13 +16,23 @@ jobs:
       - name: Setup Rust
         uses: actions/setup-rust@v1
         with:
-          rust-version: '1.57.0' # You can change this to your desired Rust version
+          rust-version: "1.57.0" # You can change this to your desired Rust version
+
+      - name: Install Google Cloud SDK
+        uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+        with:
+          version: "latest"
 
       - name: Build Rust SPA
         run: |
           # Run commands to build your Rust SPA
           # Replace the following commands with your actual build commands
-          cargo build --release
+          trunk build --release
+
+      - name: Copy distribution files
+        run: |
+          # Assuming your distribution files are located in a directory named 'dist'
+          cp -r dist/* ./public
 
       - name: Authenticate with Google Cloud
         uses: google-github-actions/auth@v0
@@ -31,4 +41,4 @@ jobs:
 
       - name: Deploy to Google App Engine
         run: |
-          gcloud app deploy --quiet --version ${{ github.run_id }}
+          gcloud app deploy --quiet --version ${{ github.run_id }} --project ${solar-grail-413716}

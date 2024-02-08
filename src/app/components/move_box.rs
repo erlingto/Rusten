@@ -5,10 +5,6 @@ use leptos_use::core::Position;
 use leptos_use::{
     on_click_outside, use_draggable_with_options, UseDraggableOptions, UseDraggableReturn,
 };
-use styled::tracing::event;
-use web_sys::wasm_bindgen::closure::Closure;
-use web_sys::wasm_bindgen::JsCast;
-use web_sys::Event;
 
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
