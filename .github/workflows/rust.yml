@@ -30,7 +30,7 @@ jobs:
         run: ./trunk build --release
 
       - name: Authenticate with Google Cloud
-        uses: google-github-actions/auth@v0
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
@@ -39,11 +39,7 @@ jobs:
         with:
           version: "latest"
 
-      - name: Copy distribution files
-        run: |
-          # Assuming your distribution files are located in a directory named 'dist'
-          cp -r dist/* ./public
-
       - name: Deploy to Google App Engine
+        working-directory: ./dist
         run: |
           gcloud app deploy --quiet --version ${{ github.run_id }} --project ${solar-grail-413716}
