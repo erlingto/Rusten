@@ -41,4 +41,4 @@ jobs:
 
       - name: Deploy to Google App Engine
         run: |
-          gcloud app deploy client.yml --quiet --version ${{ github.run_id }} --project ${solar-grail-413716}
+          gcloud app deploy client.yml --quiet --version ${{ github.run_id }} --project solar-grail-413716
