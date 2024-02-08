@@ -40,6 +40,5 @@ jobs:
           version: "latest"
 
       - name: Deploy to Google App Engine
-        working-directory: ./dist
         run: |
           gcloud app deploy client.yml --quiet --version ${{ github.run_id }} --project ${solar-grail-413716}
