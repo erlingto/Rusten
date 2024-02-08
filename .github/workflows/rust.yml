@@ -10,24 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: git-checkout
+        uses: actions/checkout@v3
 
-      - name: Setup Rust
-        uses: actions/setup-rust@v1
+      - uses: dtolnay/rust-toolchain@nightly
         with:
-          rust-version: "1.57.0" # You can change this to your desired Rust version
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Setup Rust
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo clippy
+          cargo fmt --check
+
+      - name: Download and install Trunk binary
+        run: wget -qO- https://github.com/trunk-rs/trunk/releases/download/v0.18.2/trunk-x86_64-unknown-linux-gnu.tar.gz | tar -xzf-
+
+      - name: Build with Trunk
+        run: ./trunk build --release
 
       - name: Install Google Cloud SDK
         uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
         with:
           version: "latest"
-
-      - name: Build Rust SPA
-        run: |
-          # Run commands to build your Rust SPA
-          # Replace the following commands with your actual build commands
-          trunk build --release
 
       - name: Copy distribution files
         run: |
