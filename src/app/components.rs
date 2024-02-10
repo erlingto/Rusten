@@ -1,4 +1,4 @@
-pub mod button;
+pub mod attributeEditor;
 pub mod canvas;
 pub mod connection;
 pub mod diagramTextBox;
