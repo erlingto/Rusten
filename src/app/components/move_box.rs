@@ -1,4 +1,6 @@
+use crate::app::components::attributeEditor::AttributeEditor;
 use crate::app::components::styling::DRAGGABLEBOX;
+use crate::app::tio::tioCard::TioCard;
 use leptos::html::Div;
 use leptos::*;
 use leptos_use::core::Position;
@@ -10,6 +12,7 @@ use leptos_use::{
 pub fn MoveBox<F: Fn() -> () + 'static>(
     id: String,
     name: RwSignal<String>,
+    attributes: RwSignal<Vec<RwSignal<String>>>,
     position: RwSignal<Position>,
     isConnecting: ReadSignal<bool>,
     onClick: F,
@@ -60,35 +63,28 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
             node_ref=boxEl
             id=id.to_string()
             style=move || {
-                format!(
-                    "position: fixed; {} ;border:1px solid black;background-color: #EBEBEB;width: 100px;
-                        height: 100px;",
-                    positionStyle.get(),
-                )
+                format!("position: fixed; {}; width: 100px; height: 200px;", positionStyle.get())
             }
 
             on:click=move |_| { onClick() }
         >
-
-            <div style=DRAGGABLEBOX node_ref=dragEl>
-                <div>{move || format!("{} 🤏", name.get())}</div>
+            <TioCard>
+                <div style=DRAGGABLEBOX node_ref=dragEl>
+                    <div>{move || format!("{} 🤏", name.get())}</div>
+                </div>
                 <div>
                     <Show when=move || editable.get() fallback=|| ()>
-                        <p style="width: 80%; margin: 0">"Edit Name"</p>
-                        <input
-                            style="width: 80%; margin: 0"
-                            type="text"
-                            prop:value=name.get()
-                            on:change=move |e| name.set(event_target_value(&e))
-                        />
+                        <AttributeEditor id=id.to_string() name=name attributes=attributes/>
                     </Show>
                     <Show when=move || !editable.get() fallback=|| ()>
-                        <p>{name.get()}</p>
+                        <For each=attributes key=|state| state.get() let:child>
+                            <p>{child.get()}</p>
+                        </For>
                         <button on:click=toggleEditable>Edit</button>
                     </Show>
                 </div>
-            </div>
 
+            </TioCard>
         </div>
     }
 }

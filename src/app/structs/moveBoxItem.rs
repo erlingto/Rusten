@@ -6,4 +6,5 @@ pub struct MoveBoxItem {
     pub key: String,
     pub value: RwSignal<String>,
     pub position: RwSignal<Position>,
+    pub attributes: RwSignal<Vec<RwSignal<String>>>,
 }
