@@ -20,7 +20,7 @@ pub fn DiagramTextBox(
             connectionString.push_str(&format!("class `{}` {{ \n", x.get().value.get()));
             let att = x.get().attributes.get();
             att.iter().for_each(|y| {
-                connectionString.push_str(&format!("+ {}\n", y.get()));
+                connectionString.push_str(&format!("+ {}\n", y.value.get()));
             });
             connectionString.push_str("}\n");
         });

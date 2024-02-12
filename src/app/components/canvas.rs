@@ -136,7 +136,6 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
                     onClick=move || { connect(child) }
                     attributes=child.get().attributes
                 />
-
             </For>
             <svg style="top: 0; left: 0; width: 100%; height: 100%;">
 

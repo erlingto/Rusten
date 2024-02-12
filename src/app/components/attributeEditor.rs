@@ -1,37 +1,28 @@
-use leptos::*;
+use leptos::{html::Div, *};
+use leptos_use::{on_click_outside, use_element_hover};
 
-use crate::app::tio::tioButton::TioButton;
+use crate::app::{components::styling::TEXTINPUT, tio::tioButton::TioButton};
 #[component]
-pub fn AttributeEditor(
-    id: String,
-    name: RwSignal<String>,
-    attributes: RwSignal<Vec<RwSignal<String>>>,
-) -> impl IntoView {
-    view! {
-        <p style="width: 80%; margin: 0">"Edit Name"</p>
-        <input
-            style="width: 80%; margin: 0"
-            type="text"
-            prop:value=name.get()
-            on:change=move |e| name.set(event_target_value(&e))
-        />
-        <For each=attributes key=|state| state.get() let:child>
-            <input
-                style="width: 80%; margin: 0"
-                type="text"
-                prop:value=child.get()
-                on:change=move |e| child.set(event_target_value(&e))
-            />
-        </For>
-        <TioButton
-            onClick=move || {
-                let mut newAtt = attributes.get();
-                newAtt.push(create_rw_signal(String::from("")));
-                attributes.set(newAtt);
-            }
+pub fn AttributeEditor(attribute: RwSignal<String>) -> impl IntoView {
+    let el = create_node_ref::<Div>();
+    let active = create_rw_signal(false);
+    let is_hovered = use_element_hover(el);
+    on_click_outside(el, move |event| active.set(false));
 
-            style="font-size: 12px; margin:0; padding: 0; width: 80%; height: 20px;".to_string()
-            text=Signal::derive(move || "➕".to_string())
-        />
+    view! {
+        <div node_ref=el style="margin:0" on:click=move |_| active.set(true)>
+            <div style="display: inline-flex;">
+                <p style="margin: 0">"➖ "</p>
+                <input
+                    style=TEXTINPUT.to_string()
+                    type="text"
+                    size="500"
+                    disabled=move || !(is_hovered.get() || active.get())
+                    prop:value=attribute.get()
+                    on:change=move |e| attribute.set(event_target_value(&e))
+                />
+            </div>
+            <hr style="margin: 0; border-top: 1px solid #bbb;"/>
+        </div>
     }
 }

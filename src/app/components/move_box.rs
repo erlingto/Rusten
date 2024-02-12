@@ -1,5 +1,6 @@
-use crate::app::components::attributeEditor::AttributeEditor;
+use crate::app::components::attributesEditor::AttributesEditor;
 use crate::app::components::styling::DRAGGABLEBOX;
+use crate::app::structs::MoveBoxAttribute::MoveBoxAttribute;
 use crate::app::tio::tioCard::TioCard;
 use leptos::html::Div;
 use leptos::*;
@@ -7,12 +8,13 @@ use leptos_use::core::Position;
 use leptos_use::{
     on_click_outside, use_draggable_with_options, UseDraggableOptions, UseDraggableReturn,
 };
+use log::debug;
 
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
     id: String,
     name: RwSignal<String>,
-    attributes: RwSignal<Vec<RwSignal<String>>>,
+    attributes: RwSignal<Vec<MoveBoxAttribute>>,
     position: RwSignal<Position>,
     isConnecting: ReadSignal<bool>,
     onClick: F,
@@ -22,9 +24,6 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
     let (editable, setEditable) = create_signal(false);
 
     let startDrag = move |e| !(isConnecting.get() || editable.get());
-    let toggleEditable = move |_| {
-        setEditable(true);
-    };
     let UseDraggableReturn {
         x,
         y,
@@ -68,20 +67,12 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
             on:click=move |_| { onClick() }
         >
-            <TioCard>
+            <TioCard resize=true>
                 <div style=DRAGGABLEBOX node_ref=dragEl>
                     <div>{move || format!("{} 🤏", name.get())}</div>
                 </div>
                 <div>
-                    <Show when=move || editable.get() fallback=|| ()>
-                        <AttributeEditor id=id.to_string() name=name attributes=attributes/>
-                    </Show>
-                    <Show when=move || !editable.get() fallback=|| ()>
-                        <For each=attributes key=|state| state.get() let:child>
-                            <p>{child.get()}</p>
-                        </For>
-                        <button on:click=toggleEditable>Edit</button>
-                    </Show>
+                    <AttributesEditor id=id.to_string() name=name attributes=attributes/>
                 </div>
 
             </TioCard>
