@@ -13,7 +13,7 @@ use log::debug;
 pub fn Canvas(width: i32, height: i32) -> impl IntoView {
     let (moveBoxes, setMoveBoxes) = create_signal(Vec::<RwSignal<MoveBoxItem>>::new());
     let (isConnecting, setIsConnecting) = create_signal(false);
-    let (connections, setConnections) = create_signal(Vec::<ConnectionItem>::new());
+    let (connections, setConnections) = create_signal(Vec::<RwSignal<ConnectionItem>>::new());
     let (connectionFrom) = create_rw_signal(None::<RwSignal<MoveBoxItem>>);
 
     let nextPosition = create_rw_signal(Position { x: 20.0, y: 20.0 });
@@ -36,6 +36,7 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
             key: newString.clone(),
             value: create_rw_signal(String::from(divIds.len().to_string())),
             position: create_rw_signal(nextPosition),
+            size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
         });
         divIds.push(Data);
         inSetDivIds(divIds);
@@ -48,6 +49,7 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
                 key: "div0".to_string(),
                 value: create_rw_signal(String::from("0")),
                 position: create_rw_signal(Position { x: 20.0, y: 20.0 }),
+                size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
             })
         },
         create_rw_signal(MoveBoxItem {
@@ -55,16 +57,17 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
             key: "div1".to_string(),
             value: create_rw_signal(String::from("1")),
             position: create_rw_signal(Position { x: 200.0, y: 200.0 }),
+            size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
         }),
     ]);
 
     let boxes = moveBoxes.get();
 
-    setConnections(vec![ConnectionItem {
+    setConnections(vec![create_rw_signal(ConnectionItem {
         key: "t".to_string(),
         from: boxes[0],
         to: boxes[1],
-    }]);
+    })]);
 
     let connect = move |moveBoxItem: RwSignal<MoveBoxItem>| {
         if isConnecting.get() {
@@ -78,7 +81,7 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
                     from: from,
                     to: moveBoxItem,
                 };
-                newConnections.push(newConnection);
+                newConnections.push(create_rw_signal(newConnection));
                 setConnections(newConnections);
                 connectionFrom.set(None);
                 setIsConnecting(false);
@@ -135,6 +138,7 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
                     isConnecting=isConnecting
                     onClick=move || { connect(child) }
                     attributes=child.get().attributes
+                    size=child.get().size
                 />
             </For>
             <svg style="top: 0; left: 0; width: 100%; height: 100%;">
@@ -150,10 +154,12 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
                         style="stroke:rgb(0,0,0);stroke-width:2"
                     ></line>
                 </Show>
-                <For each=connections key=|state| state.key.clone() let:connection>
+                <For each=connections key=|state| state.get().key.clone() let:connection>
                     <Connection
                         onClick=move || {
-                            debug!("Connection: {}", "Clicked");
+                            let mut newConnections = connections.get();
+                            newConnections.retain(|x| x.get().key != connection.get().key);
+                            setConnections(newConnections);
                         }
 
                         data=connection.clone()
