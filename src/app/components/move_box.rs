@@ -6,7 +6,8 @@ use leptos::html::Div;
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{
-    on_click_outside, use_draggable_with_options, UseDraggableOptions, UseDraggableReturn,
+    on_click_outside, use_draggable_with_options, use_element_size, UseDraggableOptions,
+    UseDraggableReturn, UseElementSizeReturn,
 };
 use log::debug;
 
@@ -17,6 +18,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
     attributes: RwSignal<Vec<MoveBoxAttribute>>,
     position: RwSignal<Position>,
     isConnecting: ReadSignal<bool>,
+    size: RwSignal<Position>,
     onClick: F,
 ) -> impl IntoView {
     let dragEl = create_node_ref::<Div>();
@@ -67,7 +69,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
             on:click=move |_| { onClick() }
         >
-            <TioCard resize=true>
+            <TioCard resize=true size=size>
                 <div style=DRAGGABLEBOX node_ref=dragEl>
                     <div>{move || format!("{} 🤏", name.get())}</div>
                 </div>

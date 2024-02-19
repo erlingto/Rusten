@@ -8,7 +8,7 @@ use crate::app::{
 
 #[component]
 pub fn DiagramTextBox(
-    connections: ReadSignal<Vec<ConnectionItem>>,
+    connections: ReadSignal<Vec<RwSignal<ConnectionItem>>>,
     items: ReadSignal<Vec<RwSignal<MoveBoxItem>>>,
 ) -> impl IntoView {
     let (text, setText) = create_signal(String::from(""));
@@ -28,8 +28,8 @@ pub fn DiagramTextBox(
         connections.get().iter().for_each(|x| {
             connectionString.push_str(&format!(
                 "`{}` --> `{}`\n",
-                x.clone().from.get().value.get(),
-                x.clone().to.get().value.get()
+                x.get().from.get().value.get(),
+                x.get().to.get().value.get()
             ));
         });
         setText(connectionString);
