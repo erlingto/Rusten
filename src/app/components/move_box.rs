@@ -1,8 +1,9 @@
 use crate::app::components::attributesEditor::AttributesEditor;
-use crate::app::components::styling::DRAGGABLEBOX;
+use crate::app::components::nameEditor::NameEditor;
+use crate::app::components::styling::{NAMEBOX, TEXTINPUT};
 use crate::app::structs::MoveBoxAttribute::MoveBoxAttribute;
 use crate::app::tio::tioCard::TioCard;
-use leptos::html::Div;
+use leptos::html::{Div, P};
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{
@@ -23,7 +24,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 ) -> impl IntoView {
     let dragEl = create_node_ref::<Div>();
     let boxEl = create_node_ref::<Div>();
-    let (editable, setEditable) = create_signal(false);
+    let editable = create_rw_signal(false);
 
     let startDrag = move |e| !(isConnecting.get() || editable.get());
     let UseDraggableReturn {
@@ -39,7 +40,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
     );
 
     let stopEditing = on_click_outside(boxEl, move |event| {
-        setEditable(false);
+        editable.set(false);
     });
 
     create_effect(move |_| {
@@ -55,7 +56,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
     create_effect(move |_| {
         if isConnecting.get() {
-            setEditable(false);
+            editable.set(false);
         }
     });
 
@@ -70,8 +71,8 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
             on:click=move |_| { onClick() }
         >
             <TioCard resize=true size=size>
-                <div style=DRAGGABLEBOX node_ref=dragEl>
-                    <div>{move || format!("{} 🤏", name.get())}</div>
+                <div style=NAMEBOX node_ref=dragEl>
+                    <NameEditor name=name editable=editable/>
                 </div>
                 <div>
                     <AttributesEditor id=id.to_string() name=name attributes=attributes/>

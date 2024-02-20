@@ -3,7 +3,10 @@ use leptos_use::{on_click_outside, use_element_hover};
 
 use crate::app::{components::styling::TEXTINPUT, tio::tioButton::TioButton};
 #[component]
-pub fn AttributeEditor(attribute: RwSignal<String>) -> impl IntoView {
+pub fn AttributeEditor<F: Fn() -> () + 'static>(
+    attribute: RwSignal<String>,
+    remove: F,
+) -> impl IntoView {
     let el = create_node_ref::<Div>();
     let active = create_rw_signal(false);
     let is_hovered = use_element_hover(el);
@@ -12,7 +15,9 @@ pub fn AttributeEditor(attribute: RwSignal<String>) -> impl IntoView {
     view! {
         <div node_ref=el style="margin:0" on:click=move |_| active.set(true)>
             <div style="display: inline-flex;">
-                <p style="margin: 0">"➖ "</p>
+                <div style="margin: 0; cursor: pointer" on:click=move |_| remove()>
+                    "➖ "
+                </div>
                 <input
                     style=TEXTINPUT.to_string()
                     type="text"
