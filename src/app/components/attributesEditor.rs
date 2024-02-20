@@ -12,21 +12,20 @@ pub fn AttributesEditor(
     name: RwSignal<String>,
     attributes: RwSignal<Vec<MoveBoxAttribute>>,
 ) -> impl IntoView {
+    let count = create_rw_signal(0);
+    let removeAttribute = move |key: String| {
+        let mut newAtt = attributes.get();
+        newAtt.retain(|x| x.key != key);
+        attributes.set(newAtt);
+    };
     view! {
-        <div style="display: inline-flex; margin: 1px">
-            <p style="margin: 0">"Name:  "</p>
-            <input
-                style=TEXTINPUT.to_string()
-                size="500"
-                type="text"
-                prop:value=name.get()
-                on:change=move |e| name.set(event_target_value(&e))
-            />
-        </div>
         <hr style="border-top: 3px solid #bbb; margin:0;"/>
 
         <For each=attributes key=|state| state.key.clone() let:child>
-            <AttributeEditor attribute=child.value/>
+            <AttributeEditor
+                attribute=child.value
+                remove=move || removeAttribute(child.key.clone())
+            />
         </For>
         <TioButton
             onClick=move || {
@@ -35,9 +34,10 @@ pub fn AttributesEditor(
                 debug!("newAtt: {:?}", newAtt);
                 newAtt
                     .push(MoveBoxAttribute {
-                        key: format!("{}, {}", id, attributes.get().len()),
+                        key: format!("{}, {}", id, count.get()),
                         value: create_rw_signal(String::from("")),
                     });
+                count.set(count.get() + 1);
                 attributes.set(newAtt);
             }
 

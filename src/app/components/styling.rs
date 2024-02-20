@@ -1,4 +1,4 @@
-pub const DRAGGABLEBOX: &str = "
+pub const NAMEBOX: &str = "
     width: 100%;
     height: 20px;
     background-color: #088F8F;
@@ -6,6 +6,7 @@ pub const DRAGGABLEBOX: &str = "
     cursor: grab;
     cursor: -moz-grab;
     cursor: -webkit-grab;
+    display: inline-flex;>
   ";
 
 pub const TEXTINPUT: &str = "
