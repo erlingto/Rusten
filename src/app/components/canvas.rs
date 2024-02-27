@@ -168,7 +168,12 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
             </svg>
         </div>
         <div style="display: inline-block;">
-            <DiagramTextBox connections=connections items=moveBoxes/>
+            <DiagramTextBox
+                connections=connections
+                setConnections=setConnections
+                items=moveBoxes
+                setItems=setMoveBoxes
+            />
         </div>
     }
 }
