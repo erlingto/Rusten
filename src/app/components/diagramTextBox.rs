@@ -2,6 +2,7 @@ use leptos::*;
 use leptos_use::core::{Position, Size};
 use log::debug;
 use styled::tracing::field::debug;
+use dict::{ Dict, DictIface };
 
 use crate::app::{
     structs::{
@@ -19,6 +20,7 @@ pub fn DiagramTextBox(
     setItems: WriteSignal<Vec<RwSignal<MoveBoxItem>>>,
 ) -> impl IntoView {
     let (text, setText) = create_signal(String::from(""));
+    let (importCount, setImportCount) = create_signal(0);
 
     let printDiagram = move || {
         let mut connectionString = String::from(":::mermaid\n");
@@ -81,14 +83,13 @@ pub fn DiagramTextBox(
                             key: keyCount.to_string(),
                         });
                         keyCount += 1;
-                        //att.push(attL.replace("+", "").trim().to_string());
                     }
                     attLine = lines.next();
                 }
                 newItems.push(create_rw_signal(MoveBoxItem {
                     position: create_rw_signal(Position { x: 0.0, y: 0.0 }),
                     value: create_rw_signal(name),
-                    key: classCount.to_string(),
+                    key: format!("{}:{}", importCount.get().to_string(), classCount.to_string()),
                     attributes: create_rw_signal(att),
                     size: create_rw_signal(Position { x: 20.0, y: 20.0 }),
                 }));
@@ -111,7 +112,7 @@ pub fn DiagramTextBox(
                 debug!("{:?}", toItem);
                 if (toItem.is_some() || fromItem.is_some()) {
                     newConnections.push(create_rw_signal(ConnectionItem {
-                        key: connectionsCount.to_string(),
+                        key:format!("{}_{}", importCount.get().to_string(), connectionsCount.to_string()), 
                         from: *fromItem.unwrap(),
                         to: *toItem.unwrap(),
                     }));
@@ -122,9 +123,85 @@ pub fn DiagramTextBox(
         }
         debug!("{:?}", newConnections.len());
         debug!("{:?}", newItems.len());
-        setItems(newItems);
+        setImportCount(importCount.get() + 1);
+        setItems(newItems); 
         setConnections(newConnections);
     };
+
+    let organizePositions = move |connections: Vec<RwSignal<ConnectionItem>>, items: Vec<RwSignal<MoveBoxItem>>| {
+        let mut toRankDict = Dict::<String, i32>::new();
+        let mut fromRankDict = Dict::<String, i32>::new();
+        connections.iter().for_each(|x| {
+            let from = x.get().from.get();
+            let to = x.get().to.get();
+            if (toRankDict.get(to.key).is_none()){
+                toRankDict.add(to.key, 1);
+            }
+            else{
+                toRankDict.set(to.key, toRankDict.get(to.key).unwrap() + 1);
+            }
+            if (fromRankDict.get(from.key).is_none()) {
+                fromRankDict.add(from.key, 1);
+            }
+            else{
+                fromRankDict.set(from.key, fromRankDict.get(from.key).unwrap() + 1);
+            }
+        });
+
+        let mut toRankneighbourWeighted = Dict::<String, Dict<String, i32>>::new();
+        let mut fromRankneighbourWeighted = Dict::<String, Dict<String, i32>>::new();
+
+        connections.iter().for_each(|x| {
+            let from = x.get().from.get();
+            let to = x.get().to.get();
+            if (toRankneighbourWeighted.get(to.key).is_none()){
+                toRankneighbourWeighted.add(to.key, Dict::<String, i32>::new());
+            } 
+            else{
+                toRankneighbourWeighted.set(to.key, toRankDict.get(from.key).unwrap() + 1);
+            }
+            if (fromRankneighbourWeighted.get(from.key).is_none()) {
+                fromRankneighbourWeighted.add(from.key, fromRankDict.get(from.key).unwrap());
+            }
+            else{
+                fromRankneighbourWeighted.set(from.key, fromRankDict.get(to.key).unwrap() + 1);
+            }
+        });
+
+        let mut toRankOverView = Dict::<i32, Vec<String>>::new();
+        let mut fromRankOverView = Dict::<i32, Vec<String>>::new();
+
+        toRankDict.iter().for_each(|x| {
+            if toRankDict.get(x.1).is_none() {
+                toRankOverView.add(x.1, vec![x.0]);
+            } else {
+                toRankOverView.get(x.1).unwrap().push(x.0);
+            }
+        });
+
+        fromRankDict.iter().for_each(|x| {
+            if fromRankDict.get(x.1).is_none() {
+                toRankOverView.add(x.1, vec![x.0]);
+            } else {
+                toRankOverView.get(x.1).unwrap().push(x.0);
+            }
+        });
+
+        let Ylevels = toRankOverView.len();
+        let Xlevels = vec![];
+        toRankOverView.iter().for_each(|y| {
+            Xlevels.push(y.1.len());
+        });
+
+        items.iter().for_each(|item|){
+            let rank = toRankneighbourWeighted.iter().find(|x| x.get().key == to.key);
+            
+            let yPosition = 200.0 / Ylevels * rank;
+            let xPosition = xLevels[rank] * 200.0 / Xlevels[rank];
+        }
+
+
+    }
 
     view! {
         <div style="position: fixed; right: 2vw; width: 16vw; height: 50%;">

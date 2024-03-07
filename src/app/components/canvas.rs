@@ -14,7 +14,7 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
     let (moveBoxes, setMoveBoxes) = create_signal(Vec::<RwSignal<MoveBoxItem>>::new());
     let (isConnecting, setIsConnecting) = create_signal(false);
     let (connections, setConnections) = create_signal(Vec::<RwSignal<ConnectionItem>>::new());
-    let (connectionFrom) = create_rw_signal(None::<RwSignal<MoveBoxItem>>);
+    let connectionFrom = create_rw_signal(None::<RwSignal<MoveBoxItem>>);
 
     let nextPosition = create_rw_signal(Position { x: 20.0, y: 20.0 });
 
