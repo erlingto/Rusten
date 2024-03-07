@@ -1,16 +1,15 @@
 use crate::app::components::attributesEditor::AttributesEditor;
 use crate::app::components::nameEditor::NameEditor;
-use crate::app::components::styling::{NAMEBOX, TEXTINPUT};
+use crate::app::components::styling::{NAMEBOX};
 use crate::app::structs::MoveBoxAttribute::MoveBoxAttribute;
 use crate::app::tio::tioCard::TioCard;
 use leptos::html::{Div, P};
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{
-    on_click_outside, use_draggable_with_options, use_element_size, UseDraggableOptions,
-    UseDraggableReturn, UseElementSizeReturn,
+    on_click_outside, use_draggable_with_options, UseDraggableOptions,
+    UseDraggableReturn,
 };
-use log::debug;
 
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(

@@ -39,15 +39,17 @@ pub fn DiagramTextBox(
                 x.get().to.get().value.get()
             ));
         });
-        setText(connectionString);
+        connectionString
     };
     printDiagram();
     create_effect(move |_| {
-        printDiagram();
+        let newText = printDiagram();
+        setText(newText);
     });
 
     let importDiagram = move || {
         let diagram = text.get();
+        debug!("{:?}", diagram);
         let mut newItems = vec![];
         let mut newConnections = vec![];
         let mut lines = diagram.lines();

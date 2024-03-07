@@ -46,16 +46,16 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
         {
             create_rw_signal(MoveBoxItem {
                 attributes: create_rw_signal(vec![]),
-                key: "div0".to_string(),
-                value: create_rw_signal(String::from("0")),
+                key: "start0".to_string(),
+                value: create_rw_signal(String::from("start0")),
                 position: create_rw_signal(Position { x: 20.0, y: 20.0 }),
                 size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
             })
         },
         create_rw_signal(MoveBoxItem {
             attributes: create_rw_signal(vec![]),
-            key: "div1".to_string(),
-            value: create_rw_signal(String::from("1")),
+            key: "start1".to_string(),
+            value: create_rw_signal(String::from("start1")),
             position: create_rw_signal(Position { x: 200.0, y: 200.0 }),
             size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
         }),
@@ -64,7 +64,7 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
     let boxes = moveBoxes.get();
 
     setConnections(vec![create_rw_signal(ConnectionItem {
-        key: "t".to_string(),
+        key: "0".to_string(),
         from: boxes[0],
         to: boxes[1],
     })]);
@@ -162,7 +162,7 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
                             setConnections(newConnections);
                         }
 
-                        data=connection.clone()
+                        data=connection
                     />
                 </For>
             </svg>
