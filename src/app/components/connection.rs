@@ -73,6 +73,7 @@ pub fn Connection<F: Fn() -> () + 'static>(
             linePos.set(newLinePos);
         }
     });
+    
 
     view! {
         <marker

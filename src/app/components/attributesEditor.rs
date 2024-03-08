@@ -29,9 +29,7 @@ pub fn AttributesEditor(
         </For>
         <TioButton
             onClick=move || {
-                debug!("Adding new attribute");
                 let mut newAtt = attributes.get();
-                debug!("newAtt: {:?}", newAtt);
                 newAtt
                     .push(MoveBoxAttribute {
                         key: format!("{}, {}", id, count.get()),

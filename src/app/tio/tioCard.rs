@@ -10,14 +10,12 @@ pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> im
     let UseElementSizeReturn { width, height } = use_element_size(cardEl);
 
     let resize_effect = create_effect(move |_| {
-        debug!("Resize effect");
         if (width.get() != size.get().x || height.get() != size.get().y) {
             size.set(Position {
                 x: width.get(),
                 y: height.get(),
             });
         }
-        debug!("{}", width.get().to_string());
     });
     let resize_string = if resize {
         "resize: both; overflow: hidden;"
