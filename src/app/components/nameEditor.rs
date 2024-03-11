@@ -1,8 +1,4 @@
-use crate::app::{components::styling::TEXTINPUT, tio::tioButton::TioButton};
-use leptos::{
-    html::{Div, Input},
-    *,
-};
+use leptos::{html::Input, *};
 use leptos_use::{on_click_outside, use_element_hover};
 #[component]
 pub fn NameEditor(name: RwSignal<String>, editable: RwSignal<bool>) -> impl IntoView {
