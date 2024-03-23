@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forever Draggable Canvas</title>
+    <style>
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: move;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="myCanvas"></canvas>
+    <script>
+        // Get the canvas element
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        // Initialize variables for mouse position and dragging state
+        var isDragging = false;
+        var startX = 0;
+        var startY = 0;
+        var offsetX = 0;
+        var offsetY = 0;
+
+        // Function to handle mouse down event
+        function onMouseDown(event) {
+            isDragging = true;
+            startX = event.clientX;
+            startY = event.clientY;
+            offsetX = startX - canvas.offsetLeft;
+            offsetY = startY - canvas.offsetTop;
+        }
+
+        // Function to handle mouse move event
+        function onMouseMove(event) {
+            if (isDragging) {
+                var mouseX = event.clientX;
+                var mouseY = event.clientY;
+                var dx = mouseX - startX;
+                var dy = mouseY - startY;
+                canvas.style.left = dx + "px";
+                canvas.style.top = dy + "px";
+            }
+        }
+
+        function drawGrid() {
+            // Set grid properties
+            ctx.strokeStyle = "lightgray";
+            ctx.lineWidth = 1;
+
+            // Draw vertical grid lines
+            for (var x = 20; x < canvas.width; x += 20) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+
+            // Draw horizontal grid lines
+            for (var y = 20; y < canvas.height; y += 20) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        // Function to handle mouse up event
+        function onMouseUp(event) {
+            isDragging = false;
+        }
+
+        // Attach mouse event listeners
+        canvas.addEventListener("mousedown", onMouseDown);
+        canvas.addEventListener("mousemove", onMouseMove);
+        canvas.addEventListener("mouseup", onMouseUp);
+        drawGrid();
+
+        // Start the animation
+        requestAnimationFrame(updateCanvas);
+    </script>
+</body>
+
+</html>

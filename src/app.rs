@@ -8,7 +8,8 @@ use leptos::*;
 pub fn App() -> impl IntoView {
     view! {
         <div>
-            <Canvas width=80 height=95/>
+            // <Canvas width=80 height=95/>
+            <CanvasForever/>
         </div>
     }
 }

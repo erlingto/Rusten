@@ -1,6 +1,7 @@
 pub mod attributeEditor;
 pub mod attributesEditor;
 pub mod canvas;
+pub mod canvasForever;
 pub mod connection;
 pub mod diagramTextBox;
 pub mod move_box;
