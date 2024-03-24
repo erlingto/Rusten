@@ -1,3 +1,4 @@
+use crate::app::components::canvasForever::CanvasForever;
 use crate::app::components::connection::Connection;
 use crate::app::components::diagramTextBox::DiagramTextBox;
 use crate::app::components::move_box::MoveBox;

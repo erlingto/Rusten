@@ -1,4 +1,4 @@
-use crate::app::components::canvas::Canvas;
+use crate::app::components::{canvas::Canvas, canvasForever::CanvasForever};
 pub mod components;
 pub mod helpers;
 pub mod structs;

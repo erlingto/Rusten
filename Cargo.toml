@@ -13,4 +13,5 @@ leptos-use = "0.10.0"
 log = "0.4.20"
 styled = "0.2.0"
 stylist = "0.13.0"
-web-sys = "0.3.69"
+web-sys = { features = ["CanvasRenderingContext2d"], version = "0.3.69" }
+
