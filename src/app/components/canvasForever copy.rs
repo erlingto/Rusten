@@ -1,6 +1,5 @@
 use crate::app::components::connection::Connection;
 use crate::app::components::move_box::MoveBox;
-use crate::app::helpers::renderFunctions::renderConnectionLines;
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
 use leptos::html::Canvas;
@@ -68,16 +67,6 @@ pub fn CanvasForever(
                 .unwrap();
 
             context.clear_rect(0.0, 0.0, width, height);
-
-            renderConnectionLines(
-                connections.get(),
-                &context,
-                Position {
-                    x: xReal.get(),
-                    y: yReal.get(),
-                },
-            );
-
             context.begin_path();
 
             context.set_stroke_style(&JsValue::from_str(strokeStyle));
@@ -262,6 +251,30 @@ pub fn CanvasForever(
                     move_box_item=child
                 />
             </For>
+            <svg style=getSvgStyle>
+                <Show when=move || new_connection_start.get().is_some() fallback=|| ()>
+                    <line
+                        position="absolute"
+                        id="temp"
+                        x1=new_connection_start.get().unwrap().get().position.get().x
+                        y1=new_connection_start.get().unwrap().get().position.get().y
+                        x2=xReal
+                        y2=yReal
+                        style="position: absolute ;stroke:rgb(0,0,0);stroke-width:2; z-index=1"
+                    ></line>
+                </Show>
+                <For each=connections key=|state| state.get().key.clone() let:connection>
+                    <Connection
+                        onClick=move || {
+                            let mut newConnections = connections.get();
+                            newConnections.retain(|x| x.get().key != connection.get().key);
+                            connections.set(newConnections);
+                        }
+
+                        data=connection
+                    />
+                </For>
+            </svg>
             <div>
                 offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} ,
                 {yReal}
