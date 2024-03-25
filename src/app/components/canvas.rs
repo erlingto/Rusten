@@ -11,41 +11,33 @@ use leptos_use::{use_mouse, UseMouseReturn};
 use log::debug;
 
 #[component]
-pub fn Canvas(width: i32, height: i32) -> impl IntoView {
-    let (moveBoxes, setMoveBoxes) = create_signal(Vec::<RwSignal<MoveBoxItem>>::new());
-    let (isConnecting, setIsConnecting) = create_signal(false);
-    let (connections, setConnections) = create_signal(Vec::<RwSignal<ConnectionItem>>::new());
-    let connectionFrom = create_rw_signal(None::<RwSignal<MoveBoxItem>>);
+pub fn MermaidEditor() -> impl IntoView {
+    let moveBoxes = create_rw_signal(Vec::<RwSignal<MoveBoxItem>>::new());
+    let connections = create_rw_signal(Vec::<RwSignal<ConnectionItem>>::new());
+    let is_connecting = create_rw_signal(false);
 
+    let new_connection_start = create_rw_signal(None::<RwSignal<MoveBoxItem>>);
     let nextPosition = create_rw_signal(Position { x: 20.0, y: 20.0 });
 
-    let UseMouseReturn {
-        x, y, source_type, ..
-    } = use_mouse();
-
-    fn AddDiv(
-        moveBoxes: Vec<RwSignal<MoveBoxItem>>,
-        inSetDivIds: &WriteSignal<Vec<RwSignal<MoveBoxItem>>>,
-        nextPosition: Position,
-    ) {
+    fn AddDiv(moveBoxes: RwSignal<Vec<RwSignal<MoveBoxItem>>>, nextPosition: Position) {
         let ownedString = "div".to_owned();
-        let mut divIds = moveBoxes.clone();
-        let borrowedString = &divIds.len().to_string().to_owned();
+        let mut newMoveBoxes = moveBoxes.get();
+        let borrowedString = &newMoveBoxes.len().to_string().to_owned();
         let newString = ownedString + borrowedString;
         let Data = create_rw_signal(MoveBoxItem {
             attributes: create_rw_signal(vec![]),
             key: newString.clone(),
-            value: create_rw_signal(String::from(divIds.len().to_string())),
+            value: create_rw_signal(String::from(newMoveBoxes.len().to_string())),
             position: create_rw_signal(nextPosition),
             realPosition: create_rw_signal(nextPosition),
             isDragging: create_rw_signal(false),
             size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
         });
-        divIds.push(Data);
-        inSetDivIds(divIds);
+        newMoveBoxes.push(Data);
+        moveBoxes.set(newMoveBoxes);
     }
 
-    setMoveBoxes(vec![
+    moveBoxes.set(vec![
         {
             create_rw_signal(MoveBoxItem {
                 attributes: create_rw_signal(vec![]),
@@ -70,31 +62,56 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
 
     let boxes = moveBoxes.get();
 
-    setConnections(vec![create_rw_signal(ConnectionItem {
+    connections.set(vec![create_rw_signal(ConnectionItem {
         key: "0".to_string(),
         from: boxes[0],
         to: boxes[1],
     })]);
 
-    let connect = move |moveBoxItem: RwSignal<MoveBoxItem>| {
-        if isConnecting.get() {
-            if (connectionFrom.get().is_none()) {
-                connectionFrom.set(Some(moveBoxItem));
-            } else {
-                let from = connectionFrom.get().unwrap();
-                let mut newConnections = connections.get();
-                let newConnection = ConnectionItem {
-                    key: connections.get().len().to_string(),
-                    from: from,
-                    to: moveBoxItem,
-                };
-                newConnections.push(create_rw_signal(newConnection));
-                setConnections(newConnections);
-                connectionFrom.set(None);
-                setIsConnecting(false);
-            }
-        }
-    };
+    view! {
+        <CanvasForever
+            items=moveBoxes
+            connections=connections
+            is_connecting=is_connecting
+            new_connection_start=new_connection_start
+        />
+        <div style="margin: 0; position: absolute; top: 20px;  right: 5%">
+            <TioButton
+                style="".to_string()
+                onClick=move || {
+                    let position = nextPosition.get();
+                    AddDiv(moveBoxes, nextPosition.get());
+                    nextPosition
+                        .set(Position {
+                            x: position.x.clone() + 50.0,
+                            y: position.y.clone() + 50.0,
+                        });
+                }
 
-    view! { <CanvasForever items=moveBoxes connections=connections isConnecting=isConnecting/> }
+                text=Signal::derive(move || {
+                    format!("➕ {}", moveBoxes.get().len().to_string())
+                })
+            />
+
+            <TioButton
+                onClick=move || {
+                    is_connecting.set(!is_connecting.get());
+                }
+
+                style="".to_string()
+
+                text=Signal::derive(move || {
+                    if (is_connecting.get() == true) {
+                        "↗️".to_string()
+                    } else {
+                        "🤚".to_string()
+                    }
+                })
+            />
+
+        </div>
+        <div style="display: inline-block;">
+            <DiagramTextBox connections=connections items=moveBoxes/>
+        </div>
+    }
 }

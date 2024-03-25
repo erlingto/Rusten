@@ -4,7 +4,7 @@ use leptos_use::{on_click_outside, use_element_hover};
 pub fn NameEditor(name: RwSignal<String>, editable: RwSignal<bool>) -> impl IntoView {
     let el = create_node_ref::<Input>();
     let is_hovered = use_element_hover(el);
-    on_click_outside(el, move |event| editable.set(false));
+    on_click_outside(el, move |_| editable.set(false));
 
     let inputStyle = Signal::derive(move || {
         let mut color = "#088F8F";

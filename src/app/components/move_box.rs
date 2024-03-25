@@ -1,53 +1,46 @@
-use std::f64::consts::E;
-
 use crate::app::components::attributesEditor::AttributesEditor;
 use crate::app::components::nameEditor::NameEditor;
 use crate::app::components::styling::NAMEBOX;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
-use crate::app::structs::MoveBoxAttribute::MoveBoxAttribute;
 use crate::app::tio::tioCard::TioCard;
-use leptos::html::{Div, P};
-use leptos::math::Mo;
+use leptos::html::Div;
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{
     on_click_outside, use_draggable_with_options, UseDraggableCallbackArgs, UseDraggableOptions,
     UseDraggableReturn,
 };
-use log::debug;
-use web_sys::EventTarget;
-
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
-    isConnecting: ReadSignal<bool>,
-    MoveBoxItem: RwSignal<MoveBoxItem>,
+    is_connecting: RwSignal<bool>,
+    move_box_item: RwSignal<MoveBoxItem>,
     onClick: F,
 ) -> impl IntoView {
     let dragEl = create_node_ref::<Div>();
     let boxEl = create_node_ref::<Div>();
     let editable = create_rw_signal(false);
 
-    let isDragging = MoveBoxItem.get().isDragging;
-    let position = MoveBoxItem.get().position;
-    let realPosition = MoveBoxItem.get().realPosition;
-    let name = MoveBoxItem.get().value;
-    let attributes = MoveBoxItem.get().attributes;
-    let size = MoveBoxItem.get().size;
-    let id = MoveBoxItem.get().key;
+    let isDragging = move_box_item.get().isDragging;
+    let position = move_box_item.get().position;
+    let realPosition = move_box_item.get().realPosition;
+    let name = move_box_item.get().value;
+    let attributes = move_box_item.get().attributes;
+    let size = move_box_item.get().size;
+    let id = move_box_item.get().key;
 
-    let positionXinDiv = create_rw_signal(0.0);
-    let positionYinDiv = create_rw_signal(0.0);
+    let position_x_in_div = create_rw_signal(0.0);
+    let position_y_in_div = create_rw_signal(0.0);
 
     let startDrag = move |e: UseDraggableCallbackArgs| {
-        if !(isConnecting.get() || editable.get()) {
+        if !(is_connecting.get() || editable.get()) {
             isDragging.set(true);
 
             if let Some(target) = dragEl.get_untracked() {
                 let rect = target.get_bounding_client_rect();
                 let x = e.event.x() as f64 - rect.left();
                 let y = e.event.y() as f64 - rect.top();
-                positionXinDiv.set(x);
-                positionYinDiv.set(y);
+                position_x_in_div.set(x);
+                position_y_in_div.set(y);
             }
 
             return true;
@@ -55,26 +48,21 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
         return false;
     };
 
-    let updateRealPosition = (move |event: UseDraggableCallbackArgs| {
+    let updateRealPosition = move |event: UseDraggableCallbackArgs| {
         isDragging.set(false);
         let previousPosition = position.get();
+        let previousRealPosition = realPosition.get();
 
-        if let Some(target) = dragEl.get_untracked() {
-            let rect = target.get_bounding_client_rect();
-            let x = event.event.x() as f64 - positionXinDiv.get();
-            let y = event.event.y() as f64 - positionYinDiv.get();
-            let previousRealPosition = realPosition.get();
-            let newRealPosition = Position {
-                x: previousRealPosition.x + x - previousPosition.x,
-                y: previousRealPosition.y + y - previousPosition.y,
-            };
-            realPosition.set(newRealPosition)
-        }
-    });
+        let x = event.event.x() as f64 - position_x_in_div.get();
+        let y = event.event.y() as f64 - position_y_in_div.get();
+        let newRealPosition = Position {
+            x: previousRealPosition.x + x - previousPosition.x,
+            y: previousRealPosition.y + y - previousPosition.y,
+        };
+        realPosition.set(newRealPosition)
+    };
 
     let UseDraggableReturn {
-        x,
-        y,
         style: positionStyle,
         ..
     } = use_draggable_with_options(
@@ -87,18 +75,15 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
             }),
     );
 
-    let stopEditing = on_click_outside(boxEl, move |event| {
+    let _ = on_click_outside(boxEl, move |_| {
         editable.set(false);
     });
 
     create_effect(move |_| {
-        if isConnecting.get() {
+        if is_connecting.get() {
             editable.set(false);
         }
     });
-
-    let positionx = move || position.get().x;
-    let positiony = move || position.get().y;
 
     view! {
         <div
