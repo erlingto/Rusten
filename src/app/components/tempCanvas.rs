@@ -37,8 +37,6 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
             key: newString.clone(),
             value: create_rw_signal(String::from(divIds.len().to_string())),
             position: create_rw_signal(nextPosition),
-            realPosition: create_rw_signal(nextPosition),
-            isDragging: create_rw_signal(false),
             size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
         });
         divIds.push(Data);
@@ -52,8 +50,6 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
                 key: "start0".to_string(),
                 value: create_rw_signal(String::from("start0")),
                 position: create_rw_signal(Position { x: 20.0, y: 20.0 }),
-                realPosition: create_rw_signal(Position { x: 20.0, y: 20.0 }),
-                isDragging: create_rw_signal(false),
                 size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
             })
         },
@@ -62,8 +58,6 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
             key: "start1".to_string(),
             value: create_rw_signal(String::from("start1")),
             position: create_rw_signal(Position { x: 200.0, y: 200.0 }),
-            realPosition: create_rw_signal(Position { x: 200.0, y: 200.0 }),
-            isDragging: create_rw_signal(false),
             size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
         }),
     ]);
@@ -96,5 +90,5 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
         }
     };
 
-    view! { <CanvasForever items=moveBoxes connections=connections isConnecting=isConnecting/> }
+    view! { <CanvasForever width=width height=height/> }
 }

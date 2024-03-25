@@ -19,14 +19,17 @@ use web_sys::wasm_bindgen::JsValue;
 use web_sys::HtmlCanvasElement;
 
 #[component]
-pub fn CanvasForever() -> impl IntoView {
+pub fn CanvasForever(
+    connections: ReadSignal<Vec<RwSignal<ConnectionItem>>>,
+    items: ReadSignal<Vec<RwSignal<MoveBoxItem>>>,
+    isConnecting: ReadSignal<bool>,
+) -> impl IntoView {
     //let width = document().().unwrap().as_f64().unwrap() as i32;
     //let height = document().inner_height().unwrap().as_f64().unwrap() as i32;
 
     let width = document().body().unwrap().client_width() as f64;
     let height = width / 2.0;
 
-    debug!("width: {}, height: {}", width, height);
     let startDrag = create_rw_signal(false);
 
     let canvasRef = create_node_ref::<leptos::html::Canvas>();
@@ -41,11 +44,11 @@ pub fn CanvasForever() -> impl IntoView {
     let offsetX = create_rw_signal(0.0);
     let offsetY = create_rw_signal(0.0);
 
-    let toVirtualX = move |xReal: f64| -> f64 { xReal / width as f64 * scale.get() };
-    let toVirtualY = move |yReal: f64| -> f64 { yReal / height as f64 * scale.get() };
+    let toVirtualX = move |xReal: f64| -> f64 { xReal + offsetX.get() };
+    let toVirtualY = move |yReal: f64| -> f64 { yReal + offsetY.get() };
 
-    let toRealX = move |xVirtual: f64| -> f64 { xVirtual / scale.get() * width as f64 };
-    let toRealY = move |yVirtual: f64| -> f64 { yVirtual / scale.get() * height as f64 };
+    let toRealX = move |xVirtual: f64| -> f64 { xVirtual - offsetX.get() };
+    let toRealY = move |yVirtual: f64| -> f64 { yVirtual - offsetY.get() };
 
     let virtualHeight = move || height / scale.get();
     let virtualWidth = move || width / scale.get();
@@ -60,17 +63,11 @@ pub fn CanvasForever() -> impl IntoView {
     } = use_mouse();
 
     let drawGrid = move |canvasref: NodeRef<Canvas>, offsetX: f64, offsetY: f64, scale: f64| {
-        debug!("drawGrid");
-        debug!(
-            "offsetX: {}, offsetY: {}, scale: {}",
-            offsetX, offsetY, scale
-        );
         let cellSize = 100.0;
         let strokeStyle = "rgb(200,0,0)";
         let lineWidth = 1.0;
         let canvas = canvasref.get();
         if (canvas.is_some()) {
-            debug!("canvasWidth: {}", canvas.clone().unwrap().width());
             let context = canvas
                 .unwrap()
                 .get_context("2d")
@@ -84,7 +81,6 @@ pub fn CanvasForever() -> impl IntoView {
             context.set_stroke_style(&JsValue::from_str(strokeStyle));
             context.set_line_width(lineWidth);
             context.begin_path();
-            debug!("i: {}", width);
             for i in 0..(width as i32 / cellSize as i32 + 1) {
                 let mut x = (offsetX % cellSize) * scale;
                 x = x + i as f64 * cellSize * scale;
@@ -110,14 +106,11 @@ pub fn CanvasForever() -> impl IntoView {
     };
 
     let handleMove = move |event: web_sys::MouseEvent| {
-        debug!("i: {}", startDrag.get());
         if (startDrag.get()) {
             let x = xReal.get() as f64;
             let y = yReal.get() as f64;
-            debug!("x: {}", x);
             let distanceX = x - startX.get();
             let distanceY = y - startY.get();
-            debug!("distanceX: {}", distanceX);
             offsetX.set(cumuDistanceX.get() + distanceX / scale.get());
             offsetY.set(cumuDistanceY.get() + distanceY / scale.get());
         }
@@ -181,6 +174,43 @@ pub fn CanvasForever() -> impl IntoView {
         }
     });
 
+    let shouldRender = move |position: Position| -> bool {
+        let x = position.x;
+        let y = position.y;
+        let xReal = toRealX(x);
+        let yReal = toRealY(y);
+        let xVirtual = toVirtualX(xReal);
+        let yVirtual = toVirtualY(yReal);
+        let virtualWidth = virtualWidth();
+        let virtualHeight = virtualHeight();
+        let xInBounds = xVirtual >= 0.0 && xVirtual <= virtualWidth;
+        let yInBounds = yVirtual >= 0.0 && yVirtual <= virtualHeight;
+        return xInBounds && yInBounds;
+    };
+
+    let virtualPosition = move |position: Position| -> Position {
+        let x = position.x;
+        let y = position.y;
+        let xVirtual = toVirtualX(x);
+        let yVirtual = toVirtualY(y);
+        return Position {
+            x: xVirtual,
+            y: yVirtual,
+        };
+    };
+
+    let renderBoxes = create_effect(move |_| {
+        SpecialNonReactiveZone::enter();
+        for item in items.get().iter() {
+            if (item.get().isDragging.get()) {
+                continue;
+            }
+            let realPosition = item.get().realPosition.get();
+            debug!("realPosition: {:?}", realPosition);
+            item.get().position.set(virtualPosition(realPosition));
+        }
+    });
+
     view! {
         <div style="widht:100%; height: 100%;">
             <div>Canvas</div>
@@ -188,6 +218,9 @@ pub fn CanvasForever() -> impl IntoView {
                 style=format!("width: {}px; height: {}px;", width, height)
                 node_ref=canvasRef
             ></canvas>
+            <For each=items key=|state| state.get().key.clone() let:child>
+                <MoveBox isConnecting=isConnecting onClick=move || {} MoveBoxItem=child/>
+            </For>
             <div>
                 offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} ,
                 {yReal}

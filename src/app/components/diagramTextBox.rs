@@ -85,6 +85,7 @@ pub fn DiagramTextBox(
                 }
                 newItems.push(create_rw_signal(MoveBoxItem {
                     position: create_rw_signal(Position { x: 0.0, y: 0.0 }),
+                    realPosition: create_rw_signal(Position { x: 0.0, y: 0.0 }),
                     value: create_rw_signal(name),
                     key: format!(
                         "{}:{}",
@@ -92,6 +93,7 @@ pub fn DiagramTextBox(
                         classCount.to_string()
                     ),
                     attributes: create_rw_signal(att),
+                    isDragging: create_rw_signal(false),
                     size: create_rw_signal(Position { x: 20.0, y: 20.0 }),
                 }));
                 classCount += 1;
