@@ -229,7 +229,7 @@ pub fn CanvasForever(
             );
         } else {
             format!(
-                "position: absolute; top: {}px; left: {}px; width: 100%; height: 100%; z-index: -1;",
+                "position: absolute; top: {}px; left: {}px; width: 100%; height: 100%; z-index: -11;",
                 canvasRect.get().unwrap().top(),
                 canvasRect.get().unwrap().left()
             )
@@ -241,6 +241,7 @@ pub fn CanvasForever(
             <div>Canvas</div>
             <canvas
                 style=format!("width: {}px; height: {}px;", width, height)
+
                 node_ref=canvasRef
             ></canvas>
             <For each=items key=|state| state.get().key.clone() let:child>
@@ -259,7 +260,7 @@ pub fn CanvasForever(
                         y1=new_connection_start.get().unwrap().get().position.get().y
                         x2=xReal
                         y2=yReal
-                        style="stroke:rgb(0,0,0);stroke-width:2"
+                        style="position: absolute ;stroke:rgb(0,0,0);stroke-width:2; z-index=1"
                     ></line>
                 </Show>
                 <For each=connections key=|state| state.get().key.clone() let:connection>
