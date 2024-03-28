@@ -8,6 +8,8 @@ pub struct MoveBoxItem {
     pub key: String,
     pub value: RwSignal<String>,
     pub position: RwSignal<Position>,
+    pub realPosition: RwSignal<Position>,
+    pub isDragging: RwSignal<bool>,
     pub attributes: RwSignal<Vec<MoveBoxAttribute>>,
     pub size: RwSignal<Position>,
 }

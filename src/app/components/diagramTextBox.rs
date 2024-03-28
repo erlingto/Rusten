@@ -13,10 +13,8 @@ use crate::app::{
 
 #[component]
 pub fn DiagramTextBox(
-    connections: ReadSignal<Vec<RwSignal<ConnectionItem>>>,
-    setConnections: WriteSignal<Vec<RwSignal<ConnectionItem>>>,
-    items: ReadSignal<Vec<RwSignal<MoveBoxItem>>>,
-    setItems: WriteSignal<Vec<RwSignal<MoveBoxItem>>>,
+    connections: RwSignal<Vec<RwSignal<ConnectionItem>>>,
+    items: RwSignal<Vec<RwSignal<MoveBoxItem>>>,
 ) -> impl IntoView {
     let (text, setText) = create_signal(String::from(""));
     let (importCount, setImportCount) = create_signal(0);
@@ -85,6 +83,7 @@ pub fn DiagramTextBox(
                 }
                 newItems.push(create_rw_signal(MoveBoxItem {
                     position: create_rw_signal(Position { x: 0.0, y: 0.0 }),
+                    realPosition: create_rw_signal(Position { x: 0.0, y: 0.0 }),
                     value: create_rw_signal(name),
                     key: format!(
                         "{}:{}",
@@ -92,6 +91,7 @@ pub fn DiagramTextBox(
                         classCount.to_string()
                     ),
                     attributes: create_rw_signal(att),
+                    isDragging: create_rw_signal(false),
                     size: create_rw_signal(Position { x: 20.0, y: 20.0 }),
                 }));
                 classCount += 1;
@@ -124,12 +124,12 @@ pub fn DiagramTextBox(
         }
         organizePositions(newItems.clone(), newConnections.clone());
         setImportCount(importCount.get() + 1);
-        setItems(newItems);
-        setConnections(newConnections);
+        items.set(newItems);
+        connections.set(newConnections);
     };
 
     view! {
-        <div style="position: fixed; right: 2vw; width: 16vw; height: 50%;">
+        <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
             <h2>{"Mermaid Diagram"}</h2>
             <textarea
                 style="width: 100%; height: 100%; border: 1px solid black;"

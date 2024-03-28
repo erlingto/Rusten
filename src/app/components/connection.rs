@@ -90,7 +90,7 @@ pub fn Connection<F: Fn() -> () + 'static>(
             ></path>
         </marker>
         <line
-            style="cursor: pointer; padding: 20px;"
+            style="position:absolute; cursor: pointer; padding: 20px; z-index: 1;"
             padding="20px"
             node_ref=el
             x1=move || linePos.get().x1

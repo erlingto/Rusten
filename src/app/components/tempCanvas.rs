@@ -1,3 +1,4 @@
+use crate::app::components::canvasForever::CanvasForever;
 use crate::app::components::connection::Connection;
 use crate::app::components::diagramTextBox::DiagramTextBox;
 use crate::app::components::move_box::MoveBox;
@@ -89,91 +90,5 @@ pub fn Canvas(width: i32, height: i32) -> impl IntoView {
         }
     };
 
-    view! {
-        <div style=format!(
-            "width: {}%; height: {}%; margin:0 auto;position: absolute; border-radius: 10px; border:2px solid black",
-            width,
-            height,
-        )>
-            <div style="margin: 0; position: absolute; top: 20px;  right: 5%">
-                <TioButton
-                    style="".to_string()
-                    onClick=move || {
-                        let position = nextPosition.get();
-                        AddDiv(moveBoxes.get(), &setMoveBoxes, nextPosition.get());
-                        nextPosition
-                            .set(Position {
-                                x: position.x.clone() + 50.0,
-                                y: position.y.clone() + 50.0,
-                            });
-                    }
-
-                    text=Signal::derive(move || {
-                        format!("➕ {}", moveBoxes.get().len().to_string())
-                    })
-                />
-
-                <TioButton
-                    onClick=move || {
-                        setIsConnecting(!isConnecting.get());
-                    }
-
-                    style="".to_string()
-
-                    text=Signal::derive(move || {
-                        if (isConnecting.get() == true) {
-                            "↗️".to_string()
-                        } else {
-                            "🤚".to_string()
-                        }
-                    })
-                />
-
-            </div>
-            <For each=moveBoxes key=|state| state.get().key.clone() let:child>
-                <MoveBox
-                    id=child.get().key
-                    name=child.get().value
-                    position=child.get().position
-                    isConnecting=isConnecting
-                    onClick=move || { connect(child) }
-                    attributes=child.get().attributes
-                    size=child.get().size
-                />
-            </For>
-            <svg style="top: 0; left: 0; width: 100%; height: 100%;">
-
-                <Show when=move || connectionFrom.get().is_some() fallback=|| ()>
-                    <line
-                        position="absolute"
-                        id="temp"
-                        x1=connectionFrom.get().unwrap().get().position.get().x
-                        y1=connectionFrom.get().unwrap().get().position.get().y
-                        x2=x
-                        y2=y
-                        style="stroke:rgb(0,0,0);stroke-width:2"
-                    ></line>
-                </Show>
-                <For each=connections key=|state| state.get().key.clone() let:connection>
-                    <Connection
-                        onClick=move || {
-                            let mut newConnections = connections.get();
-                            newConnections.retain(|x| x.get().key != connection.get().key);
-                            setConnections(newConnections);
-                        }
-
-                        data=connection
-                    />
-                </For>
-            </svg>
-        </div>
-        <div style="display: inline-block;">
-            <DiagramTextBox
-                connections=connections
-                setConnections=setConnections
-                items=moveBoxes
-                setItems=setMoveBoxes
-            />
-        </div>
-    }
+    view! { <CanvasForever width=width height=height/> }
 }
