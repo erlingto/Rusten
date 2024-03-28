@@ -75,7 +75,7 @@ pub fn MermaidEditor() -> impl IntoView {
             is_connecting=is_connecting
             new_connection_start=new_connection_start
         />
-        <div style="margin: 0; position: absolute; top: 20px;  right: 5%">
+        <div style="margin: 0; position: absolute; top: 40px;  right: 25vw">
             <TioButton
                 style="".to_string()
                 onClick=move || {
@@ -110,8 +110,6 @@ pub fn MermaidEditor() -> impl IntoView {
             />
 
         </div>
-        <div style="display: inline-block;">
             <DiagramTextBox connections=connections items=moveBoxes/>
-        </div>
     }
 }

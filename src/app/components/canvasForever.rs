@@ -1,9 +1,9 @@
 use crate::app::components::connection::Connection;
 use crate::app::components::move_box::MoveBox;
-use crate::app::helpers::renderFunctions::renderConnectionLines;
+use crate::app::helpers::renderFunctions::{isMouseOverConnection, renderConnectionLines};
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
-use leptos::html::Canvas;
+use leptos::html::{Canvas, P};
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_mouse, UseMouseReturn};
@@ -11,6 +11,7 @@ use leptos_use::{use_mouse, UseMouseReturn};
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
 use web_sys::wasm_bindgen::JsValue;
+use web_sys::DomRect;
 
 #[component]
 pub fn CanvasForever(
@@ -21,8 +22,8 @@ pub fn CanvasForever(
 ) -> impl IntoView {
     let mounted = create_rw_signal(false);
 
-    let width = document().body().unwrap().client_width() as f64;
-    let height = width / 2.0;
+    let width = document().body().unwrap().client_width() as f64 * 0.8;
+    let height = width / 1.8;
     let startDrag = create_rw_signal(false);
     let canvasRef = create_node_ref::<leptos::html::Canvas>();
     let scale = create_rw_signal(1.0);
@@ -51,6 +52,26 @@ pub fn CanvasForever(
         x: xReal, y: yReal, ..
     } = use_mouse();
 
+    let removeConnection = move |connection: RwSignal<ConnectionItem>| {
+        let mut newConnections = connections.get();
+        let index = newConnections
+            .iter()
+            .position(|x| x.get().key == connection.get().key)
+            .unwrap();
+        newConnections.remove(index);
+        connections.set(newConnections);
+    };
+
+    let checkAndRemoveConnections = move || {
+        let mut newConnections = connections.get();
+        newConnections.iter().for_each(|connection| {
+            if isMouseOverConnection(connection.get(), Position { x: xReal.get(), y: yReal.get() }){
+                removeConnection(*connection);
+            }
+        });
+    };
+    
+
     let drawGrid = move |canvasref: NodeRef<Canvas>, offsetX: f64, offsetY: f64, scale: f64| {
         let cellSize = 100.0;
         let strokeStyle = "rgb(200,0,0)";
@@ -58,7 +79,6 @@ pub fn CanvasForever(
         let canvas = canvasref.get();
         if (canvas.is_some()) {
             let mounted_canvas_rect = canvas.clone().unwrap().get_bounding_client_rect();
-            canvasRect.set(Some(mounted_canvas_rect));
             let context = canvas
                 .unwrap()
                 .get_context("2d")
@@ -70,13 +90,16 @@ pub fn CanvasForever(
             context.clear_rect(0.0, 0.0, width, height);
 
             renderConnectionLines(
+                new_connection_start.get(),
                 connections.get(),
                 &context,
                 Position {
                     x: xReal.get(),
                     y: yReal.get(),
                 },
+                &mounted_canvas_rect,
             );
+            canvasRect.set(Some(mounted_canvas_rect));
 
             context.begin_path();
 
@@ -248,11 +271,9 @@ pub fn CanvasForever(
     };
 
     view! {
-        <div style="width:100%; height: 100%;">
-            <div>Canvas</div>
             <canvas
                 style=format!("width: {}px; height: {}px;", width, height)
-
+                on:click= move |_| checkAndRemoveConnections()
                 node_ref=canvasRef
             ></canvas>
             <For each=items key=|state| state.get().key.clone() let:child>
@@ -265,7 +286,6 @@ pub fn CanvasForever(
             <div>
                 offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} ,
                 {yReal}
-            </div>
-        </div>
+            </div>      
     }
 }

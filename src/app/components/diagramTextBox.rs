@@ -129,7 +129,7 @@ pub fn DiagramTextBox(
     };
 
     view! {
-        <div style="position: fixed; right: 2vw; width: 16vw; height: 50%;">
+        <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
             <h2>{"Mermaid Diagram"}</h2>
             <textarea
                 style="width: 100%; height: 100%; border: 1px solid black;"

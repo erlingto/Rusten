@@ -1,6 +1,6 @@
 pub mod attributeEditor;
 pub mod attributesEditor;
-pub mod canvas;
+pub mod mermaidEditor;
 pub mod canvasForever;
 pub mod connection;
 pub mod diagramTextBox;
