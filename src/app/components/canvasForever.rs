@@ -251,7 +251,6 @@ pub fn CanvasForever(
     };
 
     let _ = create_effect(move |_| {
-        SpecialNonReactiveZone::enter();
         for item in items.get().iter() {
             if item.get().isDragging.get() {
                 continue;
