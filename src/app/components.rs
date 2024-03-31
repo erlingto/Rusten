@@ -1,9 +1,8 @@
 pub mod attributeEditor;
 pub mod attributesEditor;
-pub mod mermaidEditor;
 pub mod canvasForever;
-pub mod connection;
 pub mod diagramTextBox;
+pub mod mermaidEditor;
 pub mod move_box;
 pub mod nameEditor;
 pub mod styling;

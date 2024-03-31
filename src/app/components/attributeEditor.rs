@@ -1,7 +1,7 @@
 use leptos::{html::Div, *};
 use leptos_use::{on_click_outside, use_element_hover};
 
-use crate::app::{components::styling::TEXTINPUT, tio::tioButton::TioButton};
+use crate::app::components::styling::TEXTINPUT;
 #[component]
 pub fn AttributeEditor<F: Fn() -> () + 'static>(
     attribute: RwSignal<String>,
@@ -10,7 +10,7 @@ pub fn AttributeEditor<F: Fn() -> () + 'static>(
     let el = create_node_ref::<Div>();
     let active = create_rw_signal(false);
     let is_hovered = use_element_hover(el);
-    on_click_outside(el, move |event| active.set(false));
+    let _ = on_click_outside(el, move |_| active.set(false));
 
     view! {
         <div node_ref=el style="margin:0" on:click=move |_| active.set(true)>

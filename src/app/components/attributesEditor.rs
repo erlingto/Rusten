@@ -1,17 +1,11 @@
 use leptos::*;
-use log::debug;
 
 use crate::app::{
-    components::{attributeEditor::AttributeEditor, styling::TEXTINPUT},
-    structs::MoveBoxAttribute::MoveBoxAttribute,
+    components::attributeEditor::AttributeEditor, structs::MoveBoxAttribute::MoveBoxAttribute,
     tio::tioButton::TioButton,
 };
 #[component]
-pub fn AttributesEditor(
-    id: String,
-    name: RwSignal<String>,
-    attributes: RwSignal<Vec<MoveBoxAttribute>>,
-) -> impl IntoView {
+pub fn AttributesEditor(id: String, attributes: RwSignal<Vec<MoveBoxAttribute>>) -> impl IntoView {
     let count = create_rw_signal(0);
     let removeAttribute = move |key: String| {
         let mut newAtt = attributes.get();
@@ -28,7 +22,7 @@ pub fn AttributesEditor(
             />
         </For>
         <TioButton
-            onClick=move || {
+            on_click=move || {
                 let mut newAtt = attributes.get();
                 newAtt
                     .push(MoveBoxAttribute {

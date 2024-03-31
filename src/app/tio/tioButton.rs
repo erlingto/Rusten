@@ -2,7 +2,7 @@ use leptos::{html::Button, *};
 use leptos_use::{use_element_hover_with_options, UseElementHoverOptions};
 #[component]
 pub fn TioButton<F: Fn() -> () + 'static>(
-    onClick: F,
+    on_click: F,
     text: Signal<String>,
     style: String,
 ) -> impl IntoView {
@@ -22,7 +22,7 @@ pub fn TioButton<F: Fn() -> () + 'static>(
 
             style=outStylestyle
             on:click=move |_| {
-                onClick();
+                on_click();
             }
         >
 

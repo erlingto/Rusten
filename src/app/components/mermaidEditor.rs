@@ -1,14 +1,10 @@
 use crate::app::components::canvasForever::CanvasForever;
-use crate::app::components::connection::Connection;
 use crate::app::components::diagramTextBox::DiagramTextBox;
-use crate::app::components::move_box::MoveBox;
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
 use crate::app::tio::tioButton::TioButton;
 use leptos::*;
 use leptos_use::core::Position;
-use leptos_use::{use_mouse, UseMouseReturn};
-use log::debug;
 
 #[component]
 pub fn MermaidEditor() -> impl IntoView {
@@ -78,7 +74,7 @@ pub fn MermaidEditor() -> impl IntoView {
         <div style="margin: 0; position: absolute; top: 40px;  right: 25vw">
             <TioButton
                 style="".to_string()
-                onClick=move || {
+                on_click=move || {
                     let position = nextPosition.get();
                     AddDiv(moveBoxes, nextPosition.get());
                     nextPosition
@@ -94,14 +90,14 @@ pub fn MermaidEditor() -> impl IntoView {
             />
 
             <TioButton
-                onClick=move || {
+                on_click=move || {
                     is_connecting.set(!is_connecting.get());
                 }
 
                 style="".to_string()
 
                 text=Signal::derive(move || {
-                    if (is_connecting.get() == true) {
+                    if is_connecting.get() == true {
                         "↗️".to_string()
                     } else {
                         "🤚".to_string()
@@ -110,6 +106,6 @@ pub fn MermaidEditor() -> impl IntoView {
             />
 
         </div>
-            <DiagramTextBox connections=connections items=moveBoxes/>
+        <DiagramTextBox connections=connections items=moveBoxes/>
     }
 }

@@ -14,7 +14,7 @@ use leptos_use::{
 pub fn MoveBox<F: Fn() -> () + 'static>(
     is_connecting: RwSignal<bool>,
     move_box_item: RwSignal<MoveBoxItem>,
-    onClick: F,
+    on_click: F,
 ) -> impl IntoView {
     let dragEl = create_node_ref::<Div>();
     let boxEl = create_node_ref::<Div>();
@@ -93,14 +93,14 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
                 format!("position: fixed; {}; width: 100px; height: 200px;", positionStyle.get())
             }
 
-            on:click=move |_| { onClick() }
+            on:click=move |_| { on_click() }
         >
             <TioCard resize=true size=size>
                 <div style=NAMEBOX node_ref=dragEl>
                     <NameEditor name=name editable=editable/>
                 </div>
                 <div>
-                    <AttributesEditor id=id.to_string() name=name attributes=attributes/>
+                    <AttributesEditor id=id.to_string() attributes=attributes/>
                 </div>
 
             </TioCard>

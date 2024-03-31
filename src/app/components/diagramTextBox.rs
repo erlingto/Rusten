@@ -1,7 +1,6 @@
-use crate::app::helpers::functions::organizePositions;
+use crate::app::helpers::orderFunctions::organize_positions;
 use leptos::*;
-use leptos_use::core::{Position, Size};
-use log::debug;
+use leptos_use::core::Position;
 
 use crate::app::{
     structs::{
@@ -96,18 +95,16 @@ pub fn DiagramTextBox(
                 }));
                 classCount += 1;
             } else if l.contains("-->") {
-                let mut from = String::from("");
-                let mut to = String::from("");
                 let mut split = l.split("-->");
-                from = split.next().unwrap().trim().to_string();
-                to = split.next().unwrap().trim().to_string();
+                let mut from = split.next().unwrap().trim().to_string();
+                let mut to = split.next().unwrap().trim().to_string();
 
                 from = String::from(from.split("`").collect::<Vec<&str>>()[1]);
                 to = String::from(to.split("`").collect::<Vec<&str>>()[1]);
 
                 let toItem = newItems.iter().find(|x| x.get().value.get() == to);
                 let fromItem = newItems.iter().find(|x| x.get().value.get() == from);
-                if (toItem.is_some() || fromItem.is_some()) {
+                if toItem.is_some() || fromItem.is_some() {
                     newConnections.push(create_rw_signal(ConnectionItem {
                         key: format!(
                             "{}_{}",
@@ -122,7 +119,7 @@ pub fn DiagramTextBox(
             }
             line = lines.next();
         }
-        organizePositions(newItems.clone(), newConnections.clone());
+        organize_positions(newItems.clone(), newConnections.clone());
         setImportCount(importCount.get() + 1);
         items.set(newItems);
         connections.set(newConnections);
@@ -140,7 +137,7 @@ pub fn DiagramTextBox(
                 {text}
             </textarea>
             <TioButton
-                onClick=move || { importDiagram() }
+                on_click=move || { importDiagram() }
                 text=Signal::derive(move || "Import Diagram".to_string())
                 style="".to_string()
             />

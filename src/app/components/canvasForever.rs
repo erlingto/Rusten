@@ -1,9 +1,8 @@
-use crate::app::components::connection::Connection;
 use crate::app::components::move_box::MoveBox;
-use crate::app::helpers::renderFunctions::{isMouseOverConnection, renderConnectionLines};
+use crate::app::helpers::renderFunctions::{is_mouse_over_connection, render_connection_lines};
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
-use leptos::html::{Canvas, P};
+use leptos::html::Canvas;
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_mouse, UseMouseReturn};
@@ -11,7 +10,6 @@ use leptos_use::{use_mouse, UseMouseReturn};
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
 use web_sys::wasm_bindgen::JsValue;
-use web_sys::DomRect;
 
 #[component]
 pub fn CanvasForever(
@@ -63,21 +61,26 @@ pub fn CanvasForever(
     };
 
     let checkAndRemoveConnections = move || {
-        let mut newConnections = connections.get();
+        let newConnections = connections.get();
         newConnections.iter().for_each(|connection| {
-            if isMouseOverConnection(connection.get(), Position { x: xReal.get(), y: yReal.get() }){
+            if is_mouse_over_connection(
+                connection.get(),
+                Position {
+                    x: xReal.get(),
+                    y: yReal.get(),
+                },
+            ) {
                 removeConnection(*connection);
             }
         });
     };
-    
 
     let drawGrid = move |canvasref: NodeRef<Canvas>, offsetX: f64, offsetY: f64, scale: f64| {
         let cellSize = 100.0;
         let strokeStyle = "rgb(200,0,0)";
         let lineWidth = 1.0;
         let canvas = canvasref.get();
-        if (canvas.is_some()) {
+        if canvas.is_some() {
             let mounted_canvas_rect = canvas.clone().unwrap().get_bounding_client_rect();
             let context = canvas
                 .unwrap()
@@ -89,7 +92,7 @@ pub fn CanvasForever(
 
             context.clear_rect(0.0, 0.0, width, height);
 
-            renderConnectionLines(
+            render_connection_lines(
                 new_connection_start.get(),
                 connections.get(),
                 &context,
@@ -122,7 +125,7 @@ pub fn CanvasForever(
         }
     };
 
-    let handleStart = move |event: web_sys::MouseEvent| {
+    let handleStart = move |_: web_sys::MouseEvent| {
         let x = xReal.get() as f64;
         let y = yReal.get() as f64;
         startX.set(x.clone() as f64);
@@ -130,8 +133,8 @@ pub fn CanvasForever(
         startDrag.set(true);
     };
 
-    let handleMove = move |event: web_sys::MouseEvent| {
-        if (startDrag.get()) {
+    let handleMove = move |_: web_sys::MouseEvent| {
+        if startDrag.get() {
             let x = xReal.get() as f64;
             let y = yReal.get() as f64;
             let distanceX = x - startX.get();
@@ -141,52 +144,55 @@ pub fn CanvasForever(
         }
     };
 
-    let handleEnd = move |event: web_sys::MouseEvent| {
+    let handleEnd = move |_: web_sys::MouseEvent| {
         startDrag.set(false);
         cumuDistanceX.set(offsetX.get());
         cumuDistanceY.set(offsetY.get());
     };
 
-    let draw = create_effect(move |_| {
+    let _ = create_effect(move |_| {
         drawGrid(canvasRef, offsetX.get(), offsetY.get(), scale.get());
     });
 
     let dragStartEL = move |canvasref: NodeRef<Canvas>| {
         let canvas = canvasref.get();
-        if (canvas.is_some()) {
+        if canvas.is_some() {
             let canvas = canvas.unwrap();
             let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
                 handleStart(event);
             }) as Box<dyn FnMut(_)>);
-            canvas.add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref());
+            let _ = canvas
+                .add_event_listener_with_callback("mousedown", closure.as_ref().unchecked_ref());
             closure.forget();
         }
     };
 
     let dragEndEL = move |canvasref: NodeRef<Canvas>| {
         let canvas = canvasref.get();
-        if (canvas.is_some()) {
+        if canvas.is_some() {
             let canvas = canvas.unwrap();
             let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
                 handleEnd(event);
             }) as Box<dyn FnMut(_)>);
-            canvas.add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref());
+            let _ = canvas
+                .add_event_listener_with_callback("mouseup", closure.as_ref().unchecked_ref());
             closure.forget();
         }
     };
 
     let dragMoveEL = move |canvasref: NodeRef<Canvas>| {
         let canvas = canvasref.get();
-        if (canvas.is_some()) {
+        if canvas.is_some() {
             let canvas = canvas.unwrap();
             let closure = Closure::wrap(Box::new(move |event: web_sys::MouseEvent| {
                 handleMove(event);
             }) as Box<dyn FnMut(_)>);
-            canvas.add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref());
+            let _ = canvas
+                .add_event_listener_with_callback("mousemove", closure.as_ref().unchecked_ref());
             closure.forget();
         }
     };
-    let effect = create_effect(move |_| {
+    let _ = create_effect(move |_| {
         if canvasRef.get().is_some() && mounted.get() == false {
             let canvas = canvasRef.get().unwrap();
             canvas.set_width(width as u32);
@@ -226,7 +232,7 @@ pub fn CanvasForever(
 
     let connect = move |moveBoxItem: RwSignal<MoveBoxItem>| {
         if is_connecting.get() {
-            if (new_connection_start.get().is_none()) {
+            if new_connection_start.get().is_none() {
                 new_connection_start.set(Some(moveBoxItem));
             } else {
                 let from = new_connection_start.get().unwrap();
@@ -244,10 +250,10 @@ pub fn CanvasForever(
         }
     };
 
-    let renderBoxes = create_effect(move |_| {
+    let _ = create_effect(move |_| {
         SpecialNonReactiveZone::enter();
         for item in items.get().iter() {
-            if (item.get().isDragging.get()) {
+            if item.get().isDragging.get() {
                 continue;
             }
             let realPosition = item.get().realPosition.get();
@@ -255,37 +261,21 @@ pub fn CanvasForever(
         }
     });
 
-    let getSvgStyle = move || {
-        if (canvasRect.get().is_none()) {
-            return format!(
-                "position: absolute; top: {}px; left: {}px; width: 100%; height: 100%; z-index: -1;",
-                0, 0
-            );
-        } else {
-            format!(
-                "position: absolute; top: {}px; left: {}px; width: 100%; height: 100%; z-index: -11;",
-                canvasRect.get().unwrap().top(),
-                canvasRect.get().unwrap().left()
-            )
-        }
-    };
-
     view! {
-            <canvas
-                style=format!("width: {}px; height: {}px;", width, height)
-                on:click= move |_| checkAndRemoveConnections()
-                node_ref=canvasRef
-            ></canvas>
-            <For each=items key=|state| state.get().key.clone() let:child>
-                <MoveBox
-                    is_connecting=is_connecting
-                    onClick=move || connect(child)
-                    move_box_item=child
-                />
-            </For>
-            <div>
-                offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} ,
-                {yReal}
-            </div>      
+        <canvas
+            style=format!("width: {}px; height: {}px;", width, height)
+            on:click=move |_| checkAndRemoveConnections()
+            node_ref=canvasRef
+        ></canvas>
+        <For each=items key=|state| state.get().key.clone() let:child>
+            <MoveBox
+                is_connecting=is_connecting
+                on_click=move || connect(child)
+                move_box_item=child
+            />
+        </For>
+        <div>
+            offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} , {yReal}
+        </div>
     }
 }
