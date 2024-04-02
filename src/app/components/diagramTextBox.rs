@@ -1,4 +1,4 @@
-use crate::app::helpers::orderFunctions::organize_positions;
+use crate::app::helpers::{orderFunctions::organize_positions, parseFunctions::parseDiagram};
 use leptos::*;
 use leptos_use::core::Position;
 
@@ -124,6 +124,8 @@ pub fn DiagramTextBox(
         items.set(newItems);
         connections.set(newConnections);
     };
+
+    let tokens = parseDiagram(text.get());
 
     view! {
         <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
