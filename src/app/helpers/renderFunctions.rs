@@ -60,7 +60,8 @@ fn render_connection_line(
     if is_mouse_over_connection(connection, mouse_position) {
         color = "red";
     }
-
+    let lineWidth = 2.0;
+    context.set_line_width(lineWidth);
     context.set_stroke_style(&JsValue::from_str(color));
     context.begin_path();
     context.move_to(line_position.x1, line_position.y1);

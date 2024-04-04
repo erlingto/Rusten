@@ -2,12 +2,13 @@ use super::dictionary::Dict;
 use crate::app::structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem};
 use leptos::{RwSignal, SignalGet, SignalSet};
 use leptos_use::core::Position;
+use log::debug;
 use std::vec;
 
 pub fn organize_positions(
     items: Vec<RwSignal<MoveBoxItem>>,
     connections: Vec<RwSignal<ConnectionItem>>,
-) {
+) -> Vec<RwSignal<MoveBoxItem>> {
     let mut to_rank_dict = Dict::<String, i32>::new();
     let mut from_rank_dict = Dict::<String, i32>::new();
 
@@ -94,11 +95,17 @@ pub fn organize_positions(
         let size = item.get().size.get();
         let y_position = 100.0 + (size.y + 145.0) * y_level as f64;
         let x_position = 500.0 + x_level * (size.x + 145.0);
+        item.get().realPosition.set(Position {
+            x: x_position,
+            y: y_position,
+        });
         item.get().position.set(Position {
             x: x_position,
             y: y_position,
         });
     });
+    debug!("XLevels: {:?}", xlevels);
+    return (items);
 }
 
 fn get_neighbours(connections: Vec<RwSignal<ConnectionItem>>) -> Dict<String, Vec<String>> {

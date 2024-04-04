@@ -1,4 +1,4 @@
-use crate::app::helpers::{orderFunctions::organize_positions, parseFunctions::parseDiagram};
+use crate::app::helpers::{orderFunctions::organize_positions, parseFunctions::importDiagram};
 use leptos::*;
 use leptos_use::core::Position;
 
@@ -45,87 +45,13 @@ pub fn DiagramTextBox(
         setText(newText);
     });
 
-    let importDiagram = move || {
-        let diagram = text.get();
-        let mut newItems = vec![];
-        let mut newConnections = vec![];
-        let mut lines = diagram.lines();
-        let mut line = lines.next();
-        let mut classCount = 0;
-        let mut connectionsCount = 0;
-
-        while line.is_some() {
-            let l = line.unwrap();
-            if l.contains("classDiagram") {
-                line = lines.next();
-                continue;
-            }
-
-            if l.contains("class") {
-                let mut att = vec![];
-                let name = String::from(l.split("`").collect::<Vec<&str>>()[1]);
-                let mut attLine = lines.next();
-                let mut keyCount = 0;
-                while attLine.is_some() {
-                    let attL = attLine.unwrap();
-                    if attL.contains("}") {
-                        break;
-                    }
-                    if attL.contains("+") {
-                        att.push(MoveBoxAttribute {
-                            value: create_rw_signal(attL.replace("+", "").trim().to_string()),
-                            key: keyCount.to_string(),
-                        });
-                        keyCount += 1;
-                    }
-                    attLine = lines.next();
-                }
-                newItems.push(create_rw_signal(MoveBoxItem {
-                    position: create_rw_signal(Position { x: 0.0, y: 0.0 }),
-                    realPosition: create_rw_signal(Position { x: 0.0, y: 0.0 }),
-                    value: create_rw_signal(name),
-                    key: format!(
-                        "{}:{}",
-                        importCount.get().to_string(),
-                        classCount.to_string()
-                    ),
-                    attributes: create_rw_signal(att),
-                    isDragging: create_rw_signal(false),
-                    size: create_rw_signal(Position { x: 20.0, y: 20.0 }),
-                }));
-                classCount += 1;
-            } else if l.contains("-->") {
-                let mut split = l.split("-->");
-                let mut from = split.next().unwrap().trim().to_string();
-                let mut to = split.next().unwrap().trim().to_string();
-
-                from = String::from(from.split("`").collect::<Vec<&str>>()[1]);
-                to = String::from(to.split("`").collect::<Vec<&str>>()[1]);
-
-                let toItem = newItems.iter().find(|x| x.get().value.get() == to);
-                let fromItem = newItems.iter().find(|x| x.get().value.get() == from);
-                if toItem.is_some() || fromItem.is_some() {
-                    newConnections.push(create_rw_signal(ConnectionItem {
-                        key: format!(
-                            "{}_{}",
-                            importCount.get().to_string(),
-                            connectionsCount.to_string()
-                        ),
-                        from: *fromItem.unwrap(),
-                        to: *toItem.unwrap(),
-                    }));
-                    connectionsCount = connectionsCount + 1;
-                }
-            }
-            line = lines.next();
-        }
-        organize_positions(newItems.clone(), newConnections.clone());
+    let handleImport = move || {
+        let (mut newItems, mut newConnections) = importDiagram(text.get(), importCount.get());
+        newItems = organize_positions(newItems, newConnections.clone());
         setImportCount(importCount.get() + 1);
         items.set(newItems);
         connections.set(newConnections);
     };
-
-    let tokens = parseDiagram(text.get());
 
     view! {
         <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
@@ -139,7 +65,7 @@ pub fn DiagramTextBox(
                 {text}
             </textarea>
             <TioButton
-                on_click=move || { importDiagram() }
+                on_click=move || { handleImport() }
                 text=Signal::derive(move || "Import Diagram".to_string())
                 style="".to_string()
             />
