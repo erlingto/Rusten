@@ -1,5 +1,7 @@
 use crate::app::components::move_box::MoveBox;
-use crate::app::helpers::renderFunctions::{is_mouse_over_connection, render_connection_lines};
+use crate::app::helpers::renderFunctions::{
+    is_mouse_over_connection, render_connection_lines, render_grid,
+};
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
 use leptos::html::Canvas;
@@ -9,7 +11,6 @@ use leptos_use::{use_mouse, UseMouseReturn};
 
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
-use web_sys::wasm_bindgen::JsValue;
 
 #[component]
 pub fn CanvasForever(
@@ -75,9 +76,9 @@ pub fn CanvasForever(
         });
     };
 
-    let drawGrid = move |canvasref: NodeRef<Canvas>, offsetX: f64, offsetY: f64, scale: f64| {
+    let renderCanvas = move |canvasref: NodeRef<Canvas>, offsetX: f64, offsetY: f64, scale: f64| {
         let cellSize = 100.0;
-        let strokeStyle = "rgb(200,0,0)";
+        let strokeStyle = "rgb(0,0,0)";
         let lineWidth = 1.0;
         let canvas = canvasref.get();
         if canvas.is_some() {
@@ -102,26 +103,23 @@ pub fn CanvasForever(
                 },
                 &mounted_canvas_rect,
             );
+            render_grid(
+                &context,
+                Position {
+                    x: xReal.get(),
+                    y: yReal.get(),
+                },
+                &mounted_canvas_rect,
+                width,
+                height,
+                scale,
+                offsetX,
+                offsetY,
+                strokeStyle,
+                lineWidth,
+                cellSize,
+            );
             canvasRect.set(Some(mounted_canvas_rect));
-
-            context.begin_path();
-
-            context.set_stroke_style(&JsValue::from_str(strokeStyle));
-            context.set_line_width(lineWidth);
-            context.begin_path();
-            for i in 0..(width as i32 / cellSize as i32 + 1) {
-                let mut x = (offsetX % cellSize) * scale;
-                x = x + i as f64 * cellSize * scale;
-                context.move_to(x, 0.0);
-                context.line_to(x, height as f64);
-            }
-            for i in 0..(height as i32 / cellSize as i32 + 1) {
-                let mut y = (offsetY % cellSize) * scale;
-                y = y + i as f64 * cellSize * scale;
-                context.move_to(0.0, y);
-                context.line_to(width as f64, y);
-            }
-            context.stroke();
         }
     };
 
@@ -151,7 +149,7 @@ pub fn CanvasForever(
     };
 
     let _ = create_effect(move |_| {
-        drawGrid(canvasRef, offsetX.get(), offsetY.get(), scale.get());
+        renderCanvas(canvasRef, offsetX.get(), offsetY.get(), scale.get());
     });
 
     let dragStartEL = move |canvasref: NodeRef<Canvas>| {
@@ -197,7 +195,7 @@ pub fn CanvasForever(
             let canvas = canvasRef.get().unwrap();
             canvas.set_width(width as u32);
             canvas.set_height(height as u32);
-            drawGrid(canvasRef, offsetX.get(), offsetY.get(), scale.get());
+            renderCanvas(canvasRef, offsetX.get(), offsetY.get(), scale.get());
             dragEndEL(canvasRef);
             dragMoveEL(canvasRef);
             dragStartEL(canvasRef);
