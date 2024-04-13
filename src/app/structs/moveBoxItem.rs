@@ -6,6 +6,7 @@ use super::MoveBoxAttribute::MoveBoxAttribute;
 #[derive(Debug, Clone)]
 pub struct MoveBoxItem {
     pub key: String,
+    pub should_render: RwSignal<bool>,
     pub value: RwSignal<String>,
     pub position: RwSignal<Position>,
     pub realPosition: RwSignal<Position>,

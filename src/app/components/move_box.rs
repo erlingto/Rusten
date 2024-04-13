@@ -10,6 +10,7 @@ use leptos_use::{
     on_click_outside, use_draggable_with_options, UseDraggableCallbackArgs, UseDraggableOptions,
     UseDraggableReturn,
 };
+use log::debug;
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
     is_connecting: RwSignal<bool>,
@@ -19,6 +20,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
     let dragEl = create_node_ref::<Div>();
     let boxEl = create_node_ref::<Div>();
     let editable = create_rw_signal(false);
+    let should_render = move_box_item.get().should_render;
 
     let isDragging = move_box_item.get().isDragging;
     let position = move_box_item.get().position;
@@ -87,10 +89,23 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
     view! {
         <div
+            display=move || {
+                if should_render.get() {
+                    debug!("Rendering");
+                    "inline-flex;"
+                } else {
+                    "none;"
+                }
+            }
+
             node_ref=boxEl
             id=id.to_string()
             style=move || {
-                format!("position: fixed; {}; width: 100px; height: 200px;", positionStyle.get())
+                format!(
+                    "z-index: 1; position: fixed; {}; width: 100px; height: 200px; display: {};",
+                    positionStyle.get(),
+                    if should_render.get() { "block" } else { "none" },
+                )
             }
 
             on:click=move |_| { on_click() }
@@ -102,7 +117,6 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
                 <div>
                     <AttributesEditor id=id.to_string() attributes=attributes/>
                 </div>
-
             </TioCard>
         </div>
     }

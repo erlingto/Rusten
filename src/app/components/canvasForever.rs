@@ -9,6 +9,7 @@ use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_mouse, UseMouseReturn};
 
+use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
 
@@ -39,8 +40,8 @@ pub fn CanvasForever(
     let toVirtualX = move |xReal: f64| -> f64 { xReal + offsetX.get() };
     let toVirtualY = move |yReal: f64| -> f64 { yReal + offsetY.get() };
 
-    let toRealX = move |xVirtual: f64| -> f64 { xVirtual - offsetX.get() };
-    let toRealY = move |yVirtual: f64| -> f64 { yVirtual - offsetY.get() };
+    let toRealX = move |xVirtual: f64| -> f64 { xVirtual + offsetX.get() };
+    let toRealY = move |yVirtual: f64| -> f64 { yVirtual + offsetY.get() };
 
     let virtualHeight = move || height / scale.get();
     let virtualWidth = move || width / scale.get();
@@ -204,16 +205,12 @@ pub fn CanvasForever(
     });
 
     let shouldRender = move |position: Position| -> bool {
-        let x = position.x;
-        let y = position.y;
-        let xReal = toRealX(x);
-        let yReal = toRealY(y);
-        let xVirtual = toVirtualX(xReal);
-        let yVirtual = toVirtualY(yReal);
+        let x = toRealX(position.x);
+        let y = toRealY(position.y);
         let virtualWidth = virtualWidth();
         let virtualHeight = virtualHeight();
-        let xInBounds = xVirtual >= 0.0 && xVirtual <= virtualWidth;
-        let yInBounds = yVirtual >= 0.0 && yVirtual <= virtualHeight;
+        let xInBounds = x >= 0.0 && x <= virtualWidth;
+        let yInBounds = y >= 0.0 && y <= virtualHeight;
         return xInBounds && yInBounds;
     };
 
@@ -250,6 +247,11 @@ pub fn CanvasForever(
 
     let _ = create_effect(move |_| {
         for item in items.get().iter() {
+            if !shouldRender(item.get().realPosition.get()) {
+                item.get().should_render.set(false);
+            } else {
+                item.get().should_render.set(true);
+            }
             if item.get().isDragging.get() {
                 continue;
             }
@@ -271,7 +273,7 @@ pub fn CanvasForever(
                 move_box_item=child
             />
         </For>
-        <div>
+        <div style="position: absolute; bottom: 0vh; height: 6vh; width: 90%; z-index:10; color : black; background-color: white;">
             offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} , {yReal}
         </div>
     }

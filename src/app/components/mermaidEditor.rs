@@ -28,6 +28,7 @@ pub fn MermaidEditor() -> impl IntoView {
             realPosition: create_rw_signal(nextPosition),
             isDragging: create_rw_signal(false),
             size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
+            should_render: create_rw_signal(true),
         });
         newMoveBoxes.push(Data);
         moveBoxes.set(newMoveBoxes);
@@ -43,6 +44,7 @@ pub fn MermaidEditor() -> impl IntoView {
                 realPosition: create_rw_signal(Position { x: 20.0, y: 20.0 }),
                 isDragging: create_rw_signal(false),
                 size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
+                should_render: create_rw_signal(true),
             })
         },
         create_rw_signal(MoveBoxItem {
@@ -53,6 +55,7 @@ pub fn MermaidEditor() -> impl IntoView {
             realPosition: create_rw_signal(Position { x: 200.0, y: 200.0 }),
             isDragging: create_rw_signal(false),
             size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
+            should_render: create_rw_signal(true),
         }),
     ]);
 

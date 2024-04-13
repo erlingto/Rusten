@@ -8,7 +8,7 @@ use leptos::*;
 #[component]
 pub fn App() -> impl IntoView {
     view! {
-        <div>
+        <div style="overflow: hidden;">
             <MermaidEditor/>
         </div>
     }

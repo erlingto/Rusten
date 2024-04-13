@@ -178,6 +178,7 @@ fn HandleClass(
         key: format!("{}:{}", counter, items.len().to_string()),
         value: create_rw_signal(name),
         attributes: create_rw_signal(attributes.clone()),
+        should_render: create_rw_signal(true),
     });
     items.push(item);
 }

@@ -69,26 +69,27 @@ pub fn DiagramTextBox(
     };
 
     view! {
-        <Show when=move || { show.get() }>
-            <h3>Imported {importCount.get()} times</h3>
-            <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
-                <h2>Mermaid Diagram</h2>
+        <div style="z-index:10; position: absolute; right: 0vw; width: 20vw; height: 100%; top: 0; color : black; background-color: white">
+            <Show when=move || { show.get() }>
+                <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
+                    <h2>Mermaid Diagram</h2>
 
-                <textarea
-                    style="width: 100%; height: 100%; border: 1px solid black;"
-                    type="text"
-                    value=text
-                    on:change=move |e| setText(event_target_value(&e))
-                    ref=text_area_ref
-                >
-                    {text}
-                </textarea>
-                <TioButton
-                    on_click=move || { handleImport() }
-                    text=Signal::derive(move || "Import Diagram".to_string())
-                    style="".to_string()
-                />
-            </div>
-        </Show>
+                    <textarea
+                        style="width: 100%; height: 100%; border: 1px solid black;"
+                        type="text"
+                        value=text
+                        on:change=move |e| setText(event_target_value(&e))
+                        ref=text_area_ref
+                    >
+                        {text}
+                    </textarea>
+                    <TioButton
+                        on_click=move || { handleImport() }
+                        text=Signal::derive(move || "Import Diagram".to_string())
+                        style="".to_string()
+                    />
+                </div>
+            </Show>
+        </div>
     }
 }
