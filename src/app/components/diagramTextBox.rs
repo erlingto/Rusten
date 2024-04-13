@@ -75,10 +75,6 @@ pub fn DiagramTextBox(
                 <h2>Mermaid Diagram</h2>
 
                 <textarea
-                    key=move || {
-                        importCount.get().to_string() + items.get().len().to_string().as_str()
-                    }
-
                     style="width: 100%; height: 100%; border: 1px solid black;"
                     type="text"
                     value=text
