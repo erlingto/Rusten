@@ -262,7 +262,7 @@ pub fn CanvasForever(
 
     view! {
         <canvas
-            style=format!("width: {}px; height: {}px;", width, height)
+            style=format!("width: {}px; height: {}px; border: 1px solid black;", width, height)
             on:click=move |_| checkAndRemoveConnections()
             node_ref=canvasRef
         ></canvas>
