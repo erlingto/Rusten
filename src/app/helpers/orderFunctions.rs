@@ -104,7 +104,6 @@ pub fn organize_positions(
             y: y_position,
         });
     });
-    debug!("XLevels: {:?}", xlevels);
     return (items);
 }
 
@@ -140,16 +139,20 @@ fn organize_xpositions(
     to_rank_over_view: Dict<i32, Vec<String>>,
     connections: Vec<RwSignal<ConnectionItem>>,
 ) -> (Dict<String, f64>, Dict<String, f64>) {
-    let mut x_ranks = Dict::<String, f64>::new();
-    let neighbour_dict = get_neighbours(connections);
-    let mut ordering = Dict::<String, f64>::new();
     let mut to_rank_keys = to_rank_over_view
         .clone()
         .into_iter()
         .map(|x| x.0)
         .collect::<Vec<i32>>();
+    if (to_rank_keys.len() == 0) {
+        return (Dict::<String, f64>::new(), Dict::<String, f64>::new());
+    }
+    let mut x_ranks = Dict::<String, f64>::new();
+    let neighbour_dict = get_neighbours(connections);
+    let mut ordering = Dict::<String, f64>::new();
 
     to_rank_keys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
     let first_key = to_rank_keys.first().unwrap();
     initialize(&to_rank_over_view[first_key.clone()], &mut x_ranks);
     to_rank_keys.into_iter().for_each(|key| {
