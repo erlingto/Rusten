@@ -2,7 +2,6 @@ use super::dictionary::Dict;
 use crate::app::structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem};
 use leptos::{RwSignal, SignalGet, SignalSet};
 use leptos_use::core::Position;
-use log::debug;
 use std::vec;
 
 pub fn organize_positions(

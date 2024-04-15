@@ -89,14 +89,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
     view! {
         <div
-            display=move || {
-                if should_render.get() {
-                    debug!("Rendering");
-                    "inline-flex;"
-                } else {
-                    "none;"
-                }
-            }
+            display=move || { if should_render.get() { "inline-flex;" } else { "none;" } }
 
             node_ref=boxEl
             id=id.to_string()

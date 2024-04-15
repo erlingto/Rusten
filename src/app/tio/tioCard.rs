@@ -3,7 +3,6 @@ use leptos::Children;
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_element_size, UseElementSizeReturn};
-use log::debug;
 #[component]
 pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> impl IntoView {
     let cardEl = create_node_ref::<Div>();

@@ -1,13 +1,10 @@
-use std::fmt::format;
-
 use leptos::{create_rw_signal, RwSignal, SignalGet};
 use leptos_use::core::Position;
-use log::debug;
 
 use crate::app::structs::{
     connectionItem::ConnectionItem,
     moveBoxItem::MoveBoxItem,
-    token::{self, Token, TokenType},
+    token::{Token, TokenType},
     MoveBoxAttribute::MoveBoxAttribute,
 };
 

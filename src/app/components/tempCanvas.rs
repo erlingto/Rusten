@@ -8,7 +8,6 @@ use crate::app::tio::tioButton::TioButton;
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_mouse, UseMouseReturn};
-use log::debug;
 
 #[component]
 pub fn Canvas(width: i32, height: i32) -> impl IntoView {

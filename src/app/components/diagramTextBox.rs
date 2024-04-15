@@ -1,13 +1,8 @@
 use crate::app::helpers::{orderFunctions::organize_positions, parseFunctions::importDiagram};
-use leptos::{html::Div, *};
-use leptos_use::core::Position;
-use web_sys::HtmlTextAreaElement;
+use leptos::*;
 
 use crate::app::{
-    structs::{
-        connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem,
-        MoveBoxAttribute::MoveBoxAttribute,
-    },
+    structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem},
     tio::tioButton::TioButton,
 };
 
@@ -19,19 +14,7 @@ pub fn DiagramTextBox(
     let (text, setText) = create_signal(String::from(""));
     let (importCount, setImportCount) = create_signal(0);
     let text_area_ref = create_node_ref::<leptos::html::Textarea>();
-    let (show, setShow) = create_signal(true);
-
-    let flickerStart = create_effect(move |_| {
-        if (text.get().len() > 0) {
-            setShow(false);
-        }
-    });
-
-    let flicker = create_effect(move |_| {
-        if (show.get() == false) {
-            setShow(true);
-        }
-    });
+    let (disableImport, setDisableImport) = create_signal(true);
 
     let printDiagram = move || {
         let mut connectionString = String::from(":::mermaid\n");
@@ -57,7 +40,11 @@ pub fn DiagramTextBox(
     printDiagram();
     create_effect(move |_| {
         let newText = printDiagram();
-        setText(newText);
+        setText(newText.clone());
+        text_area_ref
+            .get()
+            .unwrap()
+            .set_value(newText.clone().as_str());
     });
 
     let handleImport = move || {
@@ -70,26 +57,36 @@ pub fn DiagramTextBox(
 
     view! {
         <div style="z-index:10; position: absolute; right: 0vw; width: 20vw; height: 100%; top: 0; color : black; background-color: white">
-            <Show when=move || { show.get() }>
-                <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
-                    <h2>Mermaid Diagram</h2>
+            <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
+                <h2>Mermaid Diagram</h2>
 
-                    <textarea
-                        style="width: 100%; height: 100%; border: 1px solid black;"
-                        type="text"
-                        value=text
-                        on:change=move |e| setText(event_target_value(&e))
-                        ref=text_area_ref
-                    >
-                        {text}
-                    </textarea>
-                    <TioButton
-                        on_click=move || { handleImport() }
-                        text=Signal::derive(move || "Import Diagram".to_string())
-                        style="".to_string()
-                    />
-                </div>
-            </Show>
+                <textarea
+                    id=move || {
+                        importCount.get().to_string() + items.get().len().to_string().as_str()
+                    }
+
+                    style="width: 100%; height: 100%; border: 1px solid black;"
+                    type="text"
+                    value=move || text.get()
+                    on:input=move |e| {
+                        setDisableImport(false);
+                        e.prevent_default();
+                        setText(event_target_value(&e))
+                    }
+
+                    ref=text_area_ref
+                ></textarea>
+                <TioButton
+                    disabled=Signal::derive(disableImport)
+                    on_click=move || {
+                        handleImport();
+                        setDisableImport(true);
+                    }
+
+                    text=Signal::derive(move || "Import Diagram".to_string())
+                    style="".to_string()
+                />
+            </div>
         </div>
     }
 }
