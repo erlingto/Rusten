@@ -9,7 +9,6 @@ use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_mouse, UseMouseReturn};
 
-use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
 
