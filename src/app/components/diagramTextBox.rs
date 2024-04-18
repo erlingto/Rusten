@@ -1,5 +1,7 @@
 use crate::app::helpers::{orderFunctions::organize_positions, parseFunctions::importDiagram};
 use leptos::*;
+use leptos_router::use_query_map;
+use log::debug;
 
 use crate::app::{
     structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem},
@@ -15,6 +17,28 @@ pub fn DiagramTextBox(
     let (importCount, setImportCount) = create_signal(0);
     let text_area_ref = create_node_ref::<leptos::html::Textarea>();
     let (disableImport, setDisableImport) = create_signal(true);
+
+    let urlState = use_query_map();
+
+    let handleImport = move || {
+        let (mut newItems, mut newConnections) = importDiagram(text.get(), importCount.get());
+        newItems = organize_positions(newItems, newConnections.clone());
+        setImportCount(importCount.get() + 1);
+        items.set(newItems);
+        connections.set(newConnections);
+    };
+
+    let _ = create_effect(move |_| {
+        let urlDiagramString = urlState.with(|params| params.get("diagram").cloned());
+
+        if (urlDiagramString.is_some()
+            && importDiagram(urlDiagramString.clone().unwrap(), importCount.get())
+                != (vec![], vec![]))
+        {
+            setText(urlDiagramString.unwrap());
+            handleImport();
+        };
+    });
 
     let printDiagram = move || {
         let mut connectionString = String::from(":::mermaid\n");
@@ -46,14 +70,6 @@ pub fn DiagramTextBox(
             .unwrap()
             .set_value(newText.clone().as_str());
     });
-
-    let handleImport = move || {
-        let (mut newItems, mut newConnections) = importDiagram(text.get(), importCount.get());
-        newItems = organize_positions(newItems, newConnections.clone());
-        setImportCount(importCount.get() + 1);
-        items.set(newItems);
-        connections.set(newConnections);
-    };
 
     view! {
         <div style="z-index:10; position: absolute; right: 0vw; width: 20vw; height: 100%; top: 0; color : black; background-color: white">
