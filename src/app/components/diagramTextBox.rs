@@ -1,4 +1,7 @@
-use crate::app::helpers::{orderFunctions::organize_positions, parseFunctions::importDiagram};
+use crate::app::{
+    helpers::{orderFunctions::organize_positions, parseFunctions::importDiagram},
+    tio::tioModal::TioModal,
+};
 use leptos::*;
 use leptos_router::use_query_map;
 use log::debug;
@@ -17,6 +20,7 @@ pub fn DiagramTextBox(
     let (importCount, setImportCount) = create_signal(0);
     let text_area_ref = create_node_ref::<leptos::html::Textarea>();
     let (disableImport, setDisableImport) = create_signal(true);
+    let openShowDialog = create_rw_signal(false);
 
     let urlState = use_query_map();
 
@@ -28,17 +32,19 @@ pub fn DiagramTextBox(
         connections.set(newConnections);
     };
 
-    let _ = create_effect(move |_| {
-        let urlDiagramString = urlState.with(|params| params.get("diagram").cloned());
+    let getShareUrl = move || {
+        let mut url = window().location().href().unwrap();
+        url.push_str("?diagram=");
+        url.push_str(text.get().replace("\n", "%0D%0A").as_str());
+        url
+    };
 
-        if (urlDiagramString.is_some()
-            && importDiagram(urlDiagramString.clone().unwrap(), importCount.get())
-                != (vec![], vec![]))
-        {
-            setText(urlDiagramString.unwrap());
-            handleImport();
-        };
-    });
+    let urlDiagramString = urlState.with(|params| params.get("diagram").cloned());
+    if (urlDiagramString.is_some()) {
+        debug!("{}", &urlDiagramString.clone().unwrap());
+        setText(urlDiagramString.clone().unwrap());
+        handleImport();
+    };
 
     let printDiagram = move || {
         let mut connectionString = String::from(":::mermaid\n");
@@ -102,6 +108,24 @@ pub fn DiagramTextBox(
                     text=Signal::derive(move || "Import Diagram".to_string())
                     style="".to_string()
                 />
+                <TioButton
+                    on_click=move || {
+                        openShowDialog.set(true);
+                    }
+
+                    text=Signal::derive(move || "Share Diagram".to_string())
+                    style="".to_string()
+                />
+                <TioModal show=openShowDialog>
+                    <div>
+                        <h2>Share Diagram</h2>
+                        <p>Copy the following link to share the diagram:</p>
+                        <textarea readonly style="resize: none; width: 100%" type="text">
+                            {getShareUrl()}
+                        </textarea>
+
+                    </div>
+                </TioModal>
             </div>
         </div>
     }
