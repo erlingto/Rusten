@@ -48,12 +48,10 @@ pub fn DiagramTextBox(
     let urlDiagramString = urlState.with(|params| params.get("diagram").cloned());
     if (urlDiagramString.is_some()) {
         let decoded_diagram = URL_SAFE.decode(urlDiagramString.clone().unwrap().as_bytes());
-        debug!("Importing from URL, {:?}", decoded_diagram.clone().unwrap());
         let diagram_string = String::from_utf8(decoded_diagram.unwrap())
             .unwrap()
             .replace("%WhiteSpace%", " ")
             .replace("%0D%0A", "\n");
-        debug!("Importing from URL, {:?}", diagram_string.clone());
         setText(diagram_string);
         handleImport();
     };
