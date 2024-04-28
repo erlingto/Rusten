@@ -4,12 +4,13 @@ pub mod helpers;
 pub mod structs;
 pub mod tio;
 use leptos::*;
+use leptos_router::*;
 
 #[component]
 pub fn App() -> impl IntoView {
     view! {
-        <div style="overflow: hidden;">
+        <Router>
             <MermaidEditor/>
-        </div>
+        </Router>
     }
 }
