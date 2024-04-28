@@ -1,5 +1,6 @@
 use leptos::{create_rw_signal, RwSignal, SignalGet};
 use leptos_use::core::Position;
+use log::debug;
 
 use crate::app::structs::{
     connectionItem::ConnectionItem,
@@ -215,8 +216,11 @@ fn HandleConnection(
     connections: &mut Vec<RwSignal<ConnectionItem>>,
     counter: i32,
 ) {
-    let arrowToken = tokens.pop().unwrap();
-    assert!(arrowToken.tokenType == TokenType::ConnectionArrow);
+    let arrowToken = tokens.pop();
+    if (arrowToken.is_none()) {
+        return;
+    }
+    assert!(arrowToken.unwrap().tokenType == TokenType::ConnectionArrow);
     let from = token.unwrap();
     let to = tokens.pop().unwrap();
     let fromName: String = from.value.chars().filter(|x| x.is_alphanumeric()).collect();

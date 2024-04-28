@@ -35,39 +35,6 @@ pub fn MermaidEditor() -> impl IntoView {
         moveBoxes.set(newMoveBoxes);
     }
 
-    moveBoxes.set(vec![
-        {
-            create_rw_signal(MoveBoxItem {
-                attributes: create_rw_signal(vec![]),
-                key: "start0".to_string(),
-                value: create_rw_signal(String::from("start0")),
-                position: create_rw_signal(Position { x: 20.0, y: 20.0 }),
-                realPosition: create_rw_signal(Position { x: 20.0, y: 20.0 }),
-                isDragging: create_rw_signal(false),
-                size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
-                should_render: create_rw_signal(true),
-            })
-        },
-        create_rw_signal(MoveBoxItem {
-            attributes: create_rw_signal(vec![]),
-            key: "start1".to_string(),
-            value: create_rw_signal(String::from("start1")),
-            position: create_rw_signal(Position { x: 200.0, y: 200.0 }),
-            realPosition: create_rw_signal(Position { x: 200.0, y: 200.0 }),
-            isDragging: create_rw_signal(false),
-            size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
-            should_render: create_rw_signal(true),
-        }),
-    ]);
-
-    let boxes = moveBoxes.get();
-
-    connections.set(vec![create_rw_signal(ConnectionItem {
-        key: "0".to_string(),
-        from: boxes[0],
-        to: boxes[1],
-    })]);
-
     view! {
         <CanvasForever
             items=moveBoxes

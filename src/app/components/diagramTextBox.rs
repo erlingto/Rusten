@@ -2,6 +2,7 @@ use crate::app::{
     helpers::{orderFunctions::organize_positions, parseFunctions::importDiagram},
     tio::tioModal::TioModal,
 };
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use leptos::*;
 use leptos_router::use_query_map;
 use log::debug;
@@ -33,16 +34,27 @@ pub fn DiagramTextBox(
     };
 
     let getShareUrl = move || {
-        let mut url = window().location().href().unwrap();
+        let mut url = window().location().origin().unwrap();
         url.push_str("?diagram=");
-        url.push_str(text.get().replace("\n", "%0D%0A").as_str());
+        let encoded_diagram = URL_SAFE.encode(
+            text.get()
+                .replace(" ", "%WhiteSpace%")
+                .replace("\n", "%0D%0A"),
+        );
+        url.push_str(encoded_diagram.as_str());
         url
     };
 
     let urlDiagramString = urlState.with(|params| params.get("diagram").cloned());
     if (urlDiagramString.is_some()) {
-        debug!("{}", &urlDiagramString.clone().unwrap());
-        setText(urlDiagramString.clone().unwrap());
+        let decoded_diagram = URL_SAFE.decode(urlDiagramString.clone().unwrap().as_bytes());
+        debug!("Importing from URL, {:?}", decoded_diagram.clone().unwrap());
+        let diagram_string = String::from_utf8(decoded_diagram.unwrap())
+            .unwrap()
+            .replace("%WhiteSpace%", " ")
+            .replace("%0D%0A", "\n");
+        debug!("Importing from URL, {:?}", diagram_string.clone());
+        setText(diagram_string);
         handleImport();
     };
 

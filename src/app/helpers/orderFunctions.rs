@@ -143,7 +143,7 @@ fn organize_xpositions(
         .into_iter()
         .map(|x| x.0)
         .collect::<Vec<i32>>();
-    if (to_rank_keys.len() == 0) {
+    if to_rank_keys.len() == 0 {
         return (Dict::<String, f64>::new(), Dict::<String, f64>::new());
     }
     let mut x_ranks = Dict::<String, f64>::new();
