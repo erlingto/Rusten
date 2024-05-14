@@ -189,8 +189,6 @@ pub fn shouldRender(
     virtualHeight: f64,
 ) -> bool {
     let padding = 2.0;
-    let virtualWidth = virtualWidth;
-    let virtualHeight = virtualHeight;
     let xInBounds = position.x + size.x + padding >= 0.0 && position.x <= virtualWidth + padding;
     let yInBounds = position.y + size.y + padding >= 0.0 && position.y <= virtualHeight + padding;
     return xInBounds && yInBounds;
