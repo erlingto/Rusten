@@ -1,5 +1,6 @@
 use leptos::{RwSignal, SignalGet};
 use leptos_use::core::Position;
+use log::debug;
 use web_sys::{js_sys::Math, wasm_bindgen::JsValue, CanvasRenderingContext2d, DomRect};
 
 use crate::app::structs::{
@@ -179,4 +180,18 @@ fn calculate_from_and_to(from: MoveBoxItem, to: MoveBoxItem) -> LinePosition {
         x2: closest_x,
         y2: closest_y,
     }
+}
+
+pub fn shouldRender(
+    position: Position,
+    size: Position,
+    virtualWidth: f64,
+    virtualHeight: f64,
+) -> bool {
+    let padding = 2.0;
+    let virtualWidth = virtualWidth;
+    let virtualHeight = virtualHeight;
+    let xInBounds = position.x + size.x + padding >= 0.0 && position.x <= virtualWidth + padding;
+    let yInBounds = position.y + size.y + padding >= 0.0 && position.y <= virtualHeight + padding;
+    return xInBounds && yInBounds;
 }

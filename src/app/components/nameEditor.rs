@@ -25,8 +25,12 @@ pub fn NameEditor(name: RwSignal<String>, editable: RwSignal<bool>) -> impl Into
                     disabled=move || !(is_hovered.get() || editable.get())
                     prop:value=name.get()
                     on:change=move |e| name.set(event_target_value(&e))
-                    on:click=move |_| editable.set(true)
+                    on:click=move |e| {
+                        e.prevent_default();
+                        editable.set(true)
+                    }
                 />
+
                 <p style="position: relative; margin: 0; padding: 1px; padding-left: 10px; background-color: #088F8F">
                     "🤚"
                 </p>
