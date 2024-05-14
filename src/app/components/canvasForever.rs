@@ -1,13 +1,13 @@
 use crate::app::components::move_box::MoveBox;
 use crate::app::helpers::renderFunctions::{
-    is_mouse_over_connection, render_connection_lines, render_grid,
+    self, is_mouse_over_connection, render_connection_lines, render_grid, shouldRender,
 };
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
 use leptos::html::Canvas;
 use leptos::*;
 use leptos_use::core::Position;
-use leptos_use::{use_mouse, UseMouseReturn};
+use leptos_use::{use_element_hover, use_mouse, UseMouseReturn};
 
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
@@ -23,7 +23,7 @@ pub fn CanvasForever(
 
     let width = document().body().unwrap().client_width() as f64 * 0.8;
     let height = width / 1.8;
-    let startDrag = create_rw_signal(false);
+    let isDragging = create_rw_signal(false);
     let canvasRef = create_node_ref::<leptos::html::Canvas>();
     let scale = create_rw_signal(1.0);
 
@@ -36,11 +36,11 @@ pub fn CanvasForever(
     let offsetX = create_rw_signal(0.0);
     let offsetY = create_rw_signal(0.0);
 
-    let toVirtualX = move |xReal: f64| -> f64 { xReal + offsetX.get() };
-    let toVirtualY = move |yReal: f64| -> f64 { yReal + offsetY.get() };
-
-    let toRealX = move |xVirtual: f64| -> f64 { xVirtual + offsetX.get() };
-    let toRealY = move |yVirtual: f64| -> f64 { yVirtual + offsetY.get() };
+    let toVirtualPosition = move |position: Position| -> Position {
+        let x = position.x + offsetX.get();
+        let y = position.y + offsetY.get();
+        return Position { x, y };
+    };
 
     let virtualHeight = move || height / scale.get();
     let virtualWidth = move || width / scale.get();
@@ -123,30 +123,37 @@ pub fn CanvasForever(
         }
     };
 
-    let handleStart = move |_: web_sys::MouseEvent| {
-        let x = xReal.get() as f64;
-        let y = yReal.get() as f64;
+    let handleStart = move |event: web_sys::MouseEvent| {
+        event.prevent_default();
+        let x = xReal.get_untracked() as f64;
+        let y = yReal.get_untracked() as f64;
         startX.set(x.clone() as f64);
         startY.set(y.clone() as f64);
-        startDrag.set(true);
+        isDragging.set(true);
     };
 
     let handleMove = move |_: web_sys::MouseEvent| {
-        if startDrag.get() {
-            let x = xReal.get() as f64;
-            let y = yReal.get() as f64;
+        if isDragging.get_untracked() {
+            let x = xReal.get_untracked() as f64;
+            let y = yReal.get_untracked() as f64;
             let distanceX = x - startX.get();
             let distanceY = y - startY.get();
-            offsetX.set(cumuDistanceX.get() + distanceX / scale.get());
-            offsetY.set(cumuDistanceY.get() + distanceY / scale.get());
+            offsetX.set(cumuDistanceX.get_untracked() + distanceX / scale.get_untracked());
+            offsetY.set(cumuDistanceY.get_untracked() + distanceY / scale.get_untracked());
         }
     };
 
     let handleEnd = move |_: web_sys::MouseEvent| {
-        startDrag.set(false);
-        cumuDistanceX.set(offsetX.get());
-        cumuDistanceY.set(offsetY.get());
+        isDragging.set(false);
+        cumuDistanceX.set(offsetX.get_untracked());
+        cumuDistanceY.set(offsetY.get_untracked());
     };
+    let is_hovered = use_element_hover(canvasRef);
+    let _ = create_effect(move |_| {
+        if !is_hovered.get() {
+            isDragging.set(false);
+        }
+    });
 
     let _ = create_effect(move |_| {
         renderCanvas(canvasRef, offsetX.get(), offsetY.get(), scale.get());
@@ -203,27 +210,6 @@ pub fn CanvasForever(
         }
     });
 
-    let shouldRender = move |position: Position| -> bool {
-        let x = toRealX(position.x);
-        let y = toRealY(position.y);
-        let virtualWidth = virtualWidth();
-        let virtualHeight = virtualHeight();
-        let xInBounds = x >= 0.0 && x <= virtualWidth;
-        let yInBounds = y >= 0.0 && y <= virtualHeight;
-        return xInBounds && yInBounds;
-    };
-
-    let virtualPosition = move |position: Position| -> Position {
-        let x = position.x;
-        let y = position.y;
-        let xVirtual = toVirtualX(x);
-        let yVirtual = toVirtualY(y);
-        return Position {
-            x: xVirtual,
-            y: yVirtual,
-        };
-    };
-
     let connect = move |moveBoxItem: RwSignal<MoveBoxItem>| {
         if is_connecting.get() {
             if new_connection_start.get().is_none() {
@@ -246,7 +232,13 @@ pub fn CanvasForever(
 
     let _ = create_effect(move |_| {
         for item in items.get().iter() {
-            if !shouldRender(item.get().realPosition.get()) {
+            let virtualPosition = toVirtualPosition(item.get().realPosition.get());
+            if !shouldRender(
+                virtualPosition,
+                item.get().size.get(),
+                virtualWidth(),
+                virtualHeight(),
+            ) {
                 item.get().should_render.set(false);
             } else {
                 item.get().should_render.set(true);
@@ -254,8 +246,7 @@ pub fn CanvasForever(
             if item.get().isDragging.get() {
                 continue;
             }
-            let realPosition = item.get().realPosition.get();
-            item.get().position.set(virtualPosition(realPosition));
+            item.get().position.set(virtualPosition);
         }
     });
 
@@ -272,6 +263,8 @@ pub fn CanvasForever(
                 move_box_item=child
             />
         </For>
+        <div style="position: absolute; top: 0vh; height: 0.7vh; width: 95 vw; z-index:10; color : black; background-color: white;"></div>
+        <div style="position: absolute; top: 0.7vh; left: 0vh; height: 95vh; width: 0.4vw; z-index:10; color : black; background-color: white;"></div>
         <div style="position: absolute; bottom: 0vh; height: 6vh; width: 90%; z-index:10; color : black; background-color: white;">
             offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} , {yReal}
         </div>

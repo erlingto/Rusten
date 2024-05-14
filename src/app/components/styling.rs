@@ -15,4 +15,5 @@ pub const TEXTINPUT: &str = "
   border: 0px solid #ccc;
   font-size: 16px;
   outline: none;
+  user-select: none; 
   transition: border-color 0.3s;";
