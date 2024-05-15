@@ -61,6 +61,8 @@ pub fn CanvasForever(
         connections.set(newConnections);
     };
 
+
+
     let checkAndRemoveConnections = move || {
         let newConnections = connections.get();
         newConnections.iter().for_each(|connection| {
@@ -123,6 +125,12 @@ pub fn CanvasForever(
         }
     };
 
+    let reset_drag = move || {
+        isDragging.set(false);
+        cumuDistanceX.set(offsetX.get_untracked());
+        cumuDistanceY.set(offsetY.get_untracked());
+    };
+
     let handleStart = move |event: web_sys::MouseEvent| {
         event.prevent_default();
         let x = xReal.get_untracked() as f64;
@@ -144,14 +152,12 @@ pub fn CanvasForever(
     };
 
     let handleEnd = move |_: web_sys::MouseEvent| {
-        isDragging.set(false);
-        cumuDistanceX.set(offsetX.get_untracked());
-        cumuDistanceY.set(offsetY.get_untracked());
+        reset_drag()
     };
     let is_hovered = use_element_hover(canvasRef);
     let _ = create_effect(move |_| {
         if !is_hovered.get() {
-            isDragging.set(false);
+            reset_drag()
         }
     });
 
@@ -270,3 +276,4 @@ pub fn CanvasForever(
         </div>
     }
 }
+
