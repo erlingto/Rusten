@@ -38,7 +38,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
         let cardSize = cardSize.get();
         let cardSizeX = cardSize.x;
         let cardSizeY = cardSize.y;
-        if (cardSizeX != 0.0 && cardSizeY != 0.0) {
+        if cardSizeX != 0.0 && cardSizeY != 0.0 {
             size.set(cardSize);
         }
     });

@@ -61,8 +61,6 @@ pub fn CanvasForever(
         connections.set(newConnections);
     };
 
-
-
     let checkAndRemoveConnections = move || {
         let newConnections = connections.get();
         newConnections.iter().for_each(|connection| {
@@ -151,9 +149,7 @@ pub fn CanvasForever(
         }
     };
 
-    let handleEnd = move |_: web_sys::MouseEvent| {
-        reset_drag()
-    };
+    let handleEnd = move |_: web_sys::MouseEvent| reset_drag();
     let is_hovered = use_element_hover(canvasRef);
     let _ = create_effect(move |_| {
         if !is_hovered.get() {
@@ -276,4 +272,3 @@ pub fn CanvasForever(
         </div>
     }
 }
-
