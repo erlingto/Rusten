@@ -14,6 +14,7 @@ use log::debug;
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
     is_connecting: RwSignal<bool>,
+    scale: RwSignal<f64>,
     move_box_item: RwSignal<MoveBoxItem>,
     on_click: F,
 ) -> impl IntoView {
@@ -35,14 +36,26 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
     let position_y_in_div = create_rw_signal(0.0);
 
     let sendSize = create_effect(move |_| {
+        let sizePos = size.get();
         let cardSize = cardSize.get();
         let cardSizeX = cardSize.x;
         let cardSizeY = cardSize.y;
-        if cardSizeX != 0.0 && cardSizeY != 0.0 {
+        if cardSizeX != 0.0 && cardSizeY != 0.0 && cardSizeX != sizePos.x && cardSizeY != sizePos.y
+        {
             size.set(cardSize);
         }
     });
-
+    let rescale = create_effect(move |_| {
+        let scale = scale.get();
+        let sizePos = size.get();
+        let newSize = Position {
+            x: sizePos.x * scale,
+            y: sizePos.y * scale,
+        };
+        debug!("Rescale: {:?}", newSize);
+        debug!("pos: {:?}", sizePos);
+        cardSize.set(newSize);
+    });
     let startDrag = move |e: UseDraggableCallbackArgs| {
         if !(is_connecting.get() || editable.get()) {
             isDragging.set(true);

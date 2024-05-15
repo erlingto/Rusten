@@ -16,18 +16,23 @@ pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> im
             });
         }
     });
+
     let resize_string = if resize {
         "resize: both; overflow: hidden;"
     } else {
         ""
     };
 
+    let sizeX = Signal::derive(move || size.get().x);
+    let sizeY = Signal::derive(move || size.get().y);
     view! {
         <div
             node_ref=cardEl
             style=format!(
-                "background-color: #F5F5F5; margin: 2px; border-radius: 4px; border:2px solid black;{};background-color: #EEF7F4",
+                "background-color: #F5F5F5; margin: 2px; border-radius: 4px; border:2px solid black;{};background-color: #EEF7F4; width: {}px; height: {}px;",
                 resize_string,
+                sizeX.get(),
+                sizeY.get(),
             )
         >
 

@@ -36,6 +36,12 @@ pub fn CanvasForever(
     let offsetX = create_rw_signal(0.0);
     let offsetY = create_rw_signal(0.0);
 
+    let scaleSize = move |size: Position| -> Position {
+        let x = size.x * scale.get();
+        let y = size.y * scale.get();
+        return Position { x, y };
+    };
+
     let toVirtualPosition = move |position: Position| -> Position {
         let x = position.x + offsetX.get();
         let y = position.y + offsetY.get();
@@ -149,6 +155,16 @@ pub fn CanvasForever(
         }
     };
 
+    let handleScale = move |event: web_sys::WheelEvent| {
+        event.prevent_default();
+        let delta = event.delta_y() as f64;
+        let mut newScale = (scale.get_untracked() - delta / 1000.0) * 100.0;
+        newScale = newScale.round() / 100.0;
+        if newScale > 0.1 {
+            scale.set(newScale);
+        }
+    };
+
     let handleEnd = move |_: web_sys::MouseEvent| reset_drag();
     let is_hovered = use_element_hover(canvasRef);
     let _ = create_effect(move |_| {
@@ -160,6 +176,19 @@ pub fn CanvasForever(
     let _ = create_effect(move |_| {
         renderCanvas(canvasRef, offsetX.get(), offsetY.get(), scale.get());
     });
+
+    let scaleEl = move |canvasref: NodeRef<Canvas>| {
+        let canvas = canvasref.get();
+        if canvas.is_some() {
+            let canvas = canvas.unwrap();
+            let closure = Closure::wrap(Box::new(move |event: web_sys::WheelEvent| {
+                handleScale(event);
+            }) as Box<dyn FnMut(_)>);
+            let _ =
+                canvas.add_event_listener_with_callback("wheel", closure.as_ref().unchecked_ref());
+            closure.forget();
+        }
+    };
 
     let dragStartEL = move |canvasref: NodeRef<Canvas>| {
         let canvas = canvasref.get();
@@ -208,6 +237,7 @@ pub fn CanvasForever(
             dragEndEL(canvasRef);
             dragMoveEL(canvasRef);
             dragStartEL(canvasRef);
+            scaleEl(canvasRef);
             mounted.set(true);
         }
     });
@@ -233,22 +263,23 @@ pub fn CanvasForever(
     };
 
     let _ = create_effect(move |_| {
-        for item in items.get().iter() {
-            let virtualPosition = toVirtualPosition(item.get().realPosition.get());
+        for itemPtr in items.get().iter() {
+            let item = itemPtr.get();
+            let virtualPosition = toVirtualPosition(item.realPosition.get());
             if !shouldRender(
                 virtualPosition,
-                item.get().size.get(),
+                item.size.get(),
                 virtualWidth(),
                 virtualHeight(),
             ) {
-                item.get().should_render.set(false);
+                item.should_render.set(false);
             } else {
-                item.get().should_render.set(true);
+                item.should_render.set(true);
             }
-            if item.get().isDragging.get() {
+            if item.isDragging.get() {
                 continue;
             }
-            item.get().position.set(virtualPosition);
+            item.position.set(virtualPosition);
         }
     });
 
@@ -260,6 +291,7 @@ pub fn CanvasForever(
         ></canvas>
         <For each=items key=|state| state.get().key.clone() let:child>
             <MoveBox
+                scale=scale
                 is_connecting=is_connecting
                 on_click=move || connect(child)
                 move_box_item=child
