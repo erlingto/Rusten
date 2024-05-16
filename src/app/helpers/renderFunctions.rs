@@ -80,8 +80,6 @@ fn render_connection_line(
 
 pub fn render_grid(
     context: &CanvasRenderingContext2d,
-    mouse_position: Position,
-    dom_rect: &DomRect,
     width: f64,
     height: f64,
     scale: f64,
@@ -92,17 +90,16 @@ pub fn render_grid(
     cellSize: f64,
 ) {
     context.begin_path();
-
     context.set_stroke_style(&JsValue::from_str(strokeStyle));
     context.set_line_width(lineWidth);
     context.begin_path();
-    for i in 0..(width as i32 / cellSize as i32 + 1) {
+    for i in 0..((width / scale) as i32 / cellSize as i32 + 1) {
         let mut x = (offsetX % cellSize) * scale;
         x = x + i as f64 * cellSize * scale;
         context.move_to(x, 0.0);
         context.line_to(x, height as f64);
     }
-    for i in 0..(height as i32 / cellSize as i32 + 1) {
+    for i in 0..((height / scale) as i32 / cellSize as i32 + 1) {
         let mut y = (offsetY % cellSize) * scale;
         y = y + i as f64 * cellSize * scale;
         context.move_to(0.0, y);

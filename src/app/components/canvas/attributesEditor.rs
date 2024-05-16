@@ -1,11 +1,9 @@
+use crate::app::components::canvas::attributeEditor::AttributeEditor;
+use crate::app::{structs::MoveBoxAttribute::MoveBoxAttribute, tio::tioButton::TioButton};
 use leptos::*;
-
-use crate::app::{
-    components::attributeEditor::AttributeEditor, structs::MoveBoxAttribute::MoveBoxAttribute,
-    tio::tioButton::TioButton,
-};
 #[component]
 pub fn AttributesEditor(id: String, attributes: RwSignal<Vec<MoveBoxAttribute>>) -> impl IntoView {
+    let scale = use_context::<RwSignal<f64>>().expect("there to be a `count` signal provided");
     let count = create_rw_signal(0);
     let removeAttribute = move |key: String| {
         let mut newAtt = attributes.get();
@@ -33,8 +31,16 @@ pub fn AttributesEditor(id: String, attributes: RwSignal<Vec<MoveBoxAttribute>>)
                 attributes.set(newAtt);
             }
 
-            style="position:relative; bottom:2px; font-size: 12px; margin:0; padding: 0; width: 20px; height: 20px;"
-                .to_string()
+            style=Signal::derive(move || {
+                format!(
+                    "position:relative; bottom:2px; font-size: {}px; margin:0; padding: 0; width: {}px; height: {}px; border-radius: {}px;",
+                    12.0 * scale.get(),
+                    20.0 * scale.get(),
+                    20.0 * scale.get(),
+                    5.0 * scale.get(),
+                )
+            })
+
             text=Signal::derive(move || "➕".to_string())
         />
     }

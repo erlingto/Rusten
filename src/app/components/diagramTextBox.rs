@@ -116,7 +116,6 @@ pub fn DiagramTextBox(
                     }
 
                     text=Signal::derive(move || "Import Diagram".to_string())
-                    style="".to_string()
                 />
                 <TioButton
                     on_click=move || {
@@ -124,7 +123,6 @@ pub fn DiagramTextBox(
                     }
 
                     text=Signal::derive(move || "Share Diagram".to_string())
-                    style="".to_string()
                 />
                 <TioModal show=openShowDialog>
                     <div>

@@ -1,6 +1,6 @@
-use crate::app::components::move_box::MoveBox;
+use crate::app::components::canvas::move_box::MoveBox;
 use crate::app::helpers::renderFunctions::{
-    self, is_mouse_over_connection, render_connection_lines, render_grid, shouldRender,
+    is_mouse_over_connection, render_connection_lines, render_grid, shouldRender,
 };
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
@@ -26,6 +26,7 @@ pub fn CanvasForever(
     let isDragging = create_rw_signal(false);
     let canvasRef = create_node_ref::<leptos::html::Canvas>();
     let scale = create_rw_signal(1.0);
+    provide_context(scale);
 
     let startX = create_rw_signal(0.0);
     let startY = create_rw_signal(0.0);
@@ -36,15 +37,9 @@ pub fn CanvasForever(
     let offsetX = create_rw_signal(0.0);
     let offsetY = create_rw_signal(0.0);
 
-    let scaleSize = move |size: Position| -> Position {
-        let x = size.x * scale.get();
-        let y = size.y * scale.get();
-        return Position { x, y };
-    };
-
     let toVirtualPosition = move |position: Position| -> Position {
-        let x = position.x + offsetX.get();
-        let y = position.y + offsetY.get();
+        let x = (position.x + offsetX.get()) * scale.get();
+        let y = (position.y + offsetY.get()) * scale.get();
         return Position { x, y };
     };
 
@@ -111,11 +106,6 @@ pub fn CanvasForever(
             );
             render_grid(
                 &context,
-                Position {
-                    x: xReal.get(),
-                    y: yReal.get(),
-                },
-                &mounted_canvas_rect,
                 width,
                 height,
                 scale,

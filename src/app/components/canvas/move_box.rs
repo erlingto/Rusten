@@ -1,5 +1,5 @@
-use crate::app::components::attributesEditor::AttributesEditor;
-use crate::app::components::nameEditor::NameEditor;
+use crate::app::components::canvas::attributesEditor::AttributesEditor;
+use crate::app::components::canvas::nameEditor::NameEditor;
 use crate::app::components::styling::NAMEBOX;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
 use crate::app::tio::tioCard::TioCard;
@@ -10,7 +10,6 @@ use leptos_use::{
     on_click_outside, use_draggable_with_options, UseDraggableCallbackArgs, UseDraggableOptions,
     UseDraggableReturn,
 };
-use log::debug;
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
     is_connecting: RwSignal<bool>,
@@ -35,25 +34,13 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
     let position_x_in_div = create_rw_signal(0.0);
     let position_y_in_div = create_rw_signal(0.0);
 
-    let sendSize = create_effect(move |_| {
-        let sizePos = size.get();
-        let cardSize = cardSize.get();
-        let cardSizeX = cardSize.x;
-        let cardSizeY = cardSize.y;
-        if cardSizeX != 0.0 && cardSizeY != 0.0 && cardSizeX != sizePos.x && cardSizeY != sizePos.y
-        {
-            size.set(cardSize);
-        }
-    });
     let rescale = create_effect(move |_| {
         let scale = scale.get();
-        let sizePos = size.get();
+        let sizePos = size.get_untracked();
         let newSize = Position {
             x: sizePos.x * scale,
             y: sizePos.y * scale,
         };
-        debug!("Rescale: {:?}", newSize);
-        debug!("pos: {:?}", sizePos);
         cardSize.set(newSize);
     });
     let startDrag = move |e: UseDraggableCallbackArgs| {
@@ -119,7 +106,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
             id=id.to_string()
             style=move || {
                 format!(
-                    "z-index: 1; position: fixed; {}; width: 100px; height: 200px; display: {};",
+                    "z-index: 1; position: fixed; {}; display: {};",
                     positionStyle.get(),
                     if should_render.get() { "block" } else { "none" },
                 )
@@ -132,7 +119,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
                     <NameEditor name=name editable=editable/>
                 </div>
 
-                <div>
+                <div style=move || { format!("height: {}px;", 22.0 * scale.get()) }>
                     <AttributesEditor id=id.to_string() attributes=attributes/>
                 </div>
             </TioCard>
