@@ -69,8 +69,8 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
         let x = event.event.x() as f64 - position_x_in_div.get();
         let y = event.event.y() as f64 - position_y_in_div.get();
         let newRealPosition = Position {
-            x: previousRealPosition.x + x - previousPosition.x,
-            y: previousRealPosition.y + y - previousPosition.y,
+            x: previousRealPosition.x + (x - previousPosition.x) / scale.get(),
+            y: previousRealPosition.y + (y - previousPosition.y) / scale.get(),
         };
         realPosition.set(newRealPosition)
     };
