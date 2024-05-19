@@ -9,8 +9,10 @@ use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_element_hover, use_mouse, UseMouseReturn};
 
+use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
+use web_sys::wasm_bindgen::JsValue;
 
 #[component]
 pub fn CanvasForever(
@@ -43,13 +45,12 @@ pub fn CanvasForever(
         return Position { x, y };
     };
 
-    let virtualHeight = move || height / scale.get();
-    let virtualWidth = move || width / scale.get();
-
     let canvasRect = create_rw_signal(None::<web_sys::DomRect>);
 
     let UseMouseReturn {
-        x: xReal, y: yReal, ..
+        x: mouseX,
+        y: mouseY,
+        ..
     } = use_mouse();
 
     let removeConnection = move |connection: RwSignal<ConnectionItem>| {
@@ -66,10 +67,11 @@ pub fn CanvasForever(
         let newConnections = connections.get();
         newConnections.iter().for_each(|connection| {
             if is_mouse_over_connection(
+                scale.get(),
                 connection.get(),
                 Position {
-                    x: xReal.get(),
-                    y: yReal.get(),
+                    x: mouseX.get(),
+                    y: mouseY.get(),
                 },
             ) {
                 removeConnection(*connection);
@@ -93,15 +95,20 @@ pub fn CanvasForever(
                 .unwrap();
 
             context.clear_rect(0.0, 0.0, width, height);
-
+            context.set_stroke_style(&JsValue::from_str("rgb(255,0,0)"));
+            let middle_x = width / 2.0;
+            context.move_to(middle_x, 0.0);
+            context.line_to(middle_x, height);
+            context.stroke();
             render_connection_lines(
                 new_connection_start.get(),
                 connections.get(),
                 &context,
                 Position {
-                    x: xReal.get(),
-                    y: yReal.get(),
+                    x: mouseX.get(),
+                    y: mouseY.get(),
                 },
+                scale,
                 &mounted_canvas_rect,
             );
             render_grid(
@@ -115,6 +122,7 @@ pub fn CanvasForever(
                 lineWidth,
                 cellSize,
             );
+
             canvasRect.set(Some(mounted_canvas_rect));
         }
     };
@@ -127,8 +135,8 @@ pub fn CanvasForever(
 
     let handleStart = move |event: web_sys::MouseEvent| {
         event.prevent_default();
-        let x = xReal.get_untracked() as f64;
-        let y = yReal.get_untracked() as f64;
+        let x = mouseX.get_untracked() as f64;
+        let y = mouseY.get_untracked() as f64;
         startX.set(x.clone() as f64);
         startY.set(y.clone() as f64);
         isDragging.set(true);
@@ -136,8 +144,8 @@ pub fn CanvasForever(
 
     let handleMove = move |_: web_sys::MouseEvent| {
         if isDragging.get_untracked() {
-            let x = xReal.get_untracked() as f64;
-            let y = yReal.get_untracked() as f64;
+            let x = mouseX.get_untracked() as f64;
+            let y = mouseY.get_untracked() as f64;
             let distanceX = x - startX.get();
             let distanceY = y - startY.get();
             offsetX.set(cumuDistanceX.get_untracked() + distanceX / scale.get_untracked());
@@ -147,12 +155,33 @@ pub fn CanvasForever(
 
     let handleScale = move |event: web_sys::WheelEvent| {
         event.prevent_default();
-        let delta = event.delta_y() as f64;
-        let mut newScale = (scale.get_untracked() - delta / 1000.0) * 100.0;
-        newScale = newScale.round() / 100.0;
-        if newScale > 0.1 {
+        let mut delta = event.delta_y() as f64;
+        delta = delta / 1000.0 * 100.0;
+        delta = delta.round() / 100.0;
+
+        let newScale = ((scale.get_untracked() - delta) * 100.0).round() / 100.0;
+
+        if newScale >= 0.2 {
             scale.set(newScale);
+        } else {
+            return;
         }
+
+        let middleScale = scale.get() + delta / 2.0;
+
+        let middleXCompensation =
+            ((mouseX.get_untracked() + 1.0) / middleScale / middleScale) * delta;
+        let middleYCompensation =
+            ((mouseY.get_untracked() + 1.0) / middleScale / middleScale) * delta;
+
+        let offsetChangeX = middleXCompensation;
+        let offsetChangeY = middleYCompensation;
+
+        debug!("offsetChangeX: {}", offsetChangeX);
+        debug!("offsetChangeY: {}", offsetChangeY);
+        offsetX.set(offsetX.get() + offsetChangeX);
+        offsetY.set(offsetY.get() + offsetChangeY);
+        reset_drag();
     };
 
     let handleEnd = move |_: web_sys::MouseEvent| reset_drag();
@@ -256,12 +285,7 @@ pub fn CanvasForever(
         for itemPtr in items.get().iter() {
             let item = itemPtr.get();
             let virtualPosition = toVirtualPosition(item.realPosition.get());
-            if !shouldRender(
-                virtualPosition,
-                item.size.get(),
-                virtualWidth(),
-                virtualHeight(),
-            ) {
+            if !shouldRender(virtualPosition, item.size.get(), width, height) {
                 item.should_render.set(false);
             } else {
                 item.should_render.set(true);
@@ -290,7 +314,7 @@ pub fn CanvasForever(
         <div style="position: absolute; top: 0vh; height: 0.7vh; width: 95 vw; z-index:10; color : black; background-color: white;"></div>
         <div style="position: absolute; top: 0.7vh; left: 0vh; height: 95vh; width: 0.4vw; z-index:10; color : black; background-color: white;"></div>
         <div style="position: absolute; bottom: 0vh; height: 6vh; width: 90%; z-index:10; color : black; background-color: white;">
-            offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {xReal} , {yReal}
+            offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {mouseX} , {mouseY}
         </div>
     }
 }
