@@ -9,7 +9,6 @@ use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_element_hover, use_mouse, UseMouseReturn};
 
-use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
 use web_sys::wasm_bindgen::JsValue;
@@ -177,8 +176,6 @@ pub fn CanvasForever(
         let offsetChangeX = middleXCompensation;
         let offsetChangeY = middleYCompensation;
 
-        debug!("offsetChangeX: {}", offsetChangeX);
-        debug!("offsetChangeY: {}", offsetChangeY);
         offsetX.set(offsetX.get() + offsetChangeX);
         offsetY.set(offsetY.get() + offsetChangeY);
         reset_drag();
