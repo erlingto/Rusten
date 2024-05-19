@@ -4,9 +4,7 @@ use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
 use crate::app::tio::tioButton::TioButton;
 use leptos::*;
-use leptos_router::*;
 use leptos_use::core::Position;
-use log::debug;
 
 #[component]
 pub fn MermaidEditor() -> impl IntoView {
