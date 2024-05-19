@@ -5,13 +5,14 @@ pub fn NameEditor(name: RwSignal<String>, editable: RwSignal<bool>) -> impl Into
     let el = create_node_ref::<Input>();
     let is_hovered = use_element_hover(el);
     let _ = on_click_outside(el, move |_| editable.set(false));
+    let scale = use_context::<RwSignal<f64>>().expect("there to be a `count` signal provided");
 
     let inputStyle = Signal::derive(move || {
         let mut color = "#088F8F";
         if editable.get() || is_hovered.get() {
             color = "#0bb8b8";
         }
-        format!("border: 0px solid #ccc; font-size: 16px; padding: 0; margin: 0; width: 100%; color: black; background-color: {}", color)
+        format!("border: 0px solid #ccc; font-size: {}px; padding: 0; margin: 0; width: 100%; color: black; background-color: {}", 16.0 * scale.get(), color)
     });
 
     view! {
@@ -31,11 +32,13 @@ pub fn NameEditor(name: RwSignal<String>, editable: RwSignal<bool>) -> impl Into
                     }
                 />
 
-                <p style="position: relative; margin: 0; padding: 1px; padding-left: 10px; background-color: #088F8F">
-                    "🤚"
-                </p>
+                <p style=move || {
+                    format!(
+                        "position: relative; margin: 0; padding: 1px; padding-left: 10px; background-color: #088F8F; font-size: {}px",
+                        16.0 * scale.get(),
+                    )
+                }>"🤚"</p>
             </div>
-            <hr style="margin: 0; border-top: 1px solid #bbb;"/>
         </div>
     }
 }

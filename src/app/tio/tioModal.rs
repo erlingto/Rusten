@@ -25,8 +25,10 @@ pub fn TioModal(children: ChildrenFn, show: RwSignal<bool>) -> impl IntoView {
                             }
 
                             text=Signal::derive(move || "✕".to_string())
-                            style="position: absolute; right: 1vw; background-color: #aaa; padding: 3px; padding-top: 0px; padding-bottom: 0px; border-radius: 5px; color: white; font-size: 20px;"
-                                .to_string()
+                            style=Signal::derive(move || {
+                                "position: absolute; right: 1vw; background-color: #aaa; padding: 3px; padding-top: 0px; padding-bottom: 0px; border-radius: 5px; color: white; font-size: 20px;"
+                                    .to_string()
+                            })
                         />
                     </div>
                     {children()}

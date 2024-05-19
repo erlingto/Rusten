@@ -1,4 +1,4 @@
-use crate::app::components::canvasForever::CanvasForever;
+use crate::app::components::canvas::canvasForever::CanvasForever;
 use crate::app::components::diagramTextBox::DiagramTextBox;
 use crate::app::structs::connectionItem::ConnectionItem;
 use crate::app::structs::moveBoxItem::MoveBoxItem;
@@ -44,7 +44,6 @@ pub fn MermaidEditor() -> impl IntoView {
         />
         <div style="margin: 0; position: absolute; top: 40px;  right: 25vw">
             <TioButton
-                style="".to_string()
                 on_click=move || {
                     let position = nextPosition.get();
                     AddDiv(moveBoxes, nextPosition.get());
@@ -64,8 +63,6 @@ pub fn MermaidEditor() -> impl IntoView {
                 on_click=move || {
                     is_connecting.set(!is_connecting.get());
                 }
-
-                style="".to_string()
 
                 text=Signal::derive(move || {
                     if is_connecting.get() == true {

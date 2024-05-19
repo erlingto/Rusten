@@ -45,12 +45,14 @@ fn draw_arrowhead(
 }
 
 fn render_connection_line(
+    scale: f64,
     connection: ConnectionItem,
     context: &CanvasRenderingContext2d,
     mouse_position: Position,
     dom_rect: &DomRect,
 ) {
-    let mut line_position = calculate_from_and_to(connection.from.get(), connection.to.get());
+    let mut line_position =
+        calculate_from_and_to(scale, connection.from.get(), connection.to.get());
     line_position = LinePosition {
         x1: line_position.x1 - dom_rect.left(),
         y1: line_position.y1 - dom_rect.top(),
@@ -58,7 +60,7 @@ fn render_connection_line(
         y2: line_position.y2 - dom_rect.top(),
     };
     let mut color = "black";
-    if is_mouse_over_connection(connection, mouse_position) {
+    if is_mouse_over_connection(scale, connection, mouse_position) {
         color = "red";
     }
     let lineWidth = 2.0;
@@ -80,8 +82,6 @@ fn render_connection_line(
 
 pub fn render_grid(
     context: &CanvasRenderingContext2d,
-    mouse_position: Position,
-    dom_rect: &DomRect,
     width: f64,
     height: f64,
     scale: f64,
@@ -92,17 +92,17 @@ pub fn render_grid(
     cellSize: f64,
 ) {
     context.begin_path();
-
     context.set_stroke_style(&JsValue::from_str(strokeStyle));
     context.set_line_width(lineWidth);
     context.begin_path();
-    for i in 0..(width as i32 / cellSize as i32 + 1) {
+
+    for i in 0..((width / scale) as i32 / cellSize as i32 + 1) {
         let mut x = (offsetX % cellSize) * scale;
         x = x + i as f64 * cellSize * scale;
         context.move_to(x, 0.0);
         context.line_to(x, height as f64);
     }
-    for i in 0..(height as i32 / cellSize as i32 + 1) {
+    for i in 0..((height / scale) as i32 / cellSize as i32 + 1) {
         let mut y = (offsetY % cellSize) * scale;
         y = y + i as f64 * cellSize * scale;
         context.move_to(0.0, y);
@@ -116,13 +116,14 @@ pub fn render_connection_lines(
     connections: Vec<RwSignal<ConnectionItem>>,
     context: &CanvasRenderingContext2d,
     mouse_position: Position,
+    scale: f64,
     dom_rect: &DomRect,
 ) {
     if let Some(new_connection_start) = new_connection_start {
         let position_from = new_connection_start.get().position.get();
         let from_size = new_connection_start.get().size.get();
-        let x1 = position_from.x + from_size.x / 2.0 - dom_rect.left();
-        let y1 = position_from.y + from_size.y / 2.0 - dom_rect.top();
+        let x1 = (position_from.x + from_size.x * scale / 2.0 - dom_rect.left());
+        let y1 = (position_from.y + from_size.y * scale / 2.0 - dom_rect.top());
         let x2 = mouse_position.x - dom_rect.left();
         let y2 = mouse_position.y - dom_rect.top();
         context.set_stroke_style(&JsValue::from_str("black"));
@@ -134,7 +135,7 @@ pub fn render_connection_lines(
     }
 
     connections.iter().for_each(|x| {
-        render_connection_line(x.get(), context, mouse_position, dom_rect);
+        render_connection_line(scale, x.get(), context, mouse_position, dom_rect);
     });
 }
 
@@ -157,22 +158,32 @@ fn distance_to_point(line_position: LinePosition, x3: f64, y3: f64) -> f64 {
     ((x3 - closest_x).powi(2) + (y3 - closest_y).powi(2)).sqrt()
 }
 
-pub fn is_mouse_over_connection(connection: ConnectionItem, mouse_position: Position) -> bool {
+pub fn is_mouse_over_connection(
+    scale: f64,
+    connection: ConnectionItem,
+    mouse_position: Position,
+) -> bool {
     let threshold = 5.0;
-    let line_position = calculate_from_and_to(connection.from.get(), connection.to.get());
+    let line_position = calculate_from_and_to(scale, connection.from.get(), connection.to.get());
     let distance_to_mouse = distance_to_point(line_position, mouse_position.x, mouse_position.y);
     distance_to_mouse < threshold
 }
 
-fn calculate_from_and_to(from: MoveBoxItem, to: MoveBoxItem) -> LinePosition {
+fn calculate_from_and_to(scale: f64, from: MoveBoxItem, to: MoveBoxItem) -> LinePosition {
     let from_position = from.position.get();
     let to_position = to.position.get();
     let from_size = from.size.get();
     let to_size = to.size.get();
-    let from_x = from_position.x + from_size.x / 2.0;
-    let from_y = from_position.y + from_size.y / 2.0;
-    let closest_x = max(to_position.x, min(from_x, to_position.x + to_size.x + 5.0));
-    let closest_y = max(to_position.y, min(from_y, to_position.y + to_size.y + 5.0));
+    let from_x = from_position.x + from_size.x * scale / 2.0;
+    let from_y = from_position.y + from_size.y * scale / 2.0;
+    let closest_x = max(
+        to_position.x,
+        min(from_x, to_position.x + to_size.x * scale + 5.0),
+    );
+    let closest_y = max(
+        to_position.y,
+        min(from_y, to_position.y + to_size.y * scale + 5.0),
+    );
 
     LinePosition {
         x1: from_x,
@@ -182,14 +193,9 @@ fn calculate_from_and_to(from: MoveBoxItem, to: MoveBoxItem) -> LinePosition {
     }
 }
 
-pub fn shouldRender(
-    position: Position,
-    size: Position,
-    virtualWidth: f64,
-    virtualHeight: f64,
-) -> bool {
+pub fn shouldRender(position: Position, size: Position, width: f64, height: f64) -> bool {
     let padding = 2.0;
-    let xInBounds = position.x + size.x + padding >= 0.0 && position.x <= virtualWidth + padding;
-    let yInBounds = position.y + size.y + padding >= 0.0 && position.y <= virtualHeight + padding;
+    let xInBounds = position.x + size.x + padding >= 0.0 && position.x <= width + padding;
+    let yInBounds = position.y + size.y + padding >= 0.0 && position.y <= height + padding;
     return xInBounds && yInBounds;
 }
