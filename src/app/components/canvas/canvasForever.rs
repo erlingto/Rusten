@@ -95,11 +95,6 @@ pub fn CanvasForever(
                 .unwrap();
 
             context.clear_rect(0.0, 0.0, width, height);
-            context.set_stroke_style(&JsValue::from_str("rgb(255,0,0)"));
-            let middle_x = width / 2.0;
-            context.move_to(middle_x, 0.0);
-            context.line_to(middle_x, height);
-            context.stroke();
             render_connection_lines(
                 new_connection_start.get(),
                 connections.get(),
