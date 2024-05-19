@@ -10,6 +10,7 @@ use leptos_use::{
     on_click_outside, use_draggable_with_options, UseDraggableCallbackArgs, UseDraggableOptions,
     UseDraggableReturn,
 };
+use log::debug;
 #[component]
 pub fn MoveBox<F: Fn() -> () + 'static>(
     is_connecting: RwSignal<bool>,
@@ -29,20 +30,10 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
     let attributes = move_box_item.get().attributes;
     let size = move_box_item.get().size;
     let id = move_box_item.get().key;
-    let cardSize = create_rw_signal(size.get());
 
     let position_x_in_div = create_rw_signal(0.0);
     let position_y_in_div = create_rw_signal(0.0);
 
-    let rescale = create_effect(move |_| {
-        let scale = scale.get();
-        let sizePos = size.get_untracked();
-        let newSize = Position {
-            x: sizePos.x * scale,
-            y: sizePos.y * scale,
-        };
-        cardSize.set(newSize);
-    });
     let startDrag = move |e: UseDraggableCallbackArgs| {
         if !(is_connecting.get() || editable.get()) {
             isDragging.set(true);
@@ -114,7 +105,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
             on:click=move |_| { on_click() }
         >
-            <TioCard resize=true size=cardSize>
+            <TioCard resize=true size=size>
                 <div style=NAMEBOX node_ref=dragEl>
                     <NameEditor name=name editable=editable/>
                 </div>

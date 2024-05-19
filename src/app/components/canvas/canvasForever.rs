@@ -12,7 +12,6 @@ use leptos_use::{use_element_hover, use_mouse, UseMouseReturn};
 use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
-use web_sys::wasm_bindgen::JsValue;
 
 #[component]
 pub fn CanvasForever(
