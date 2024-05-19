@@ -80,7 +80,7 @@ pub fn organize_positions(
     to_rank_over_view.clone().into_iter().for_each(|y| {
         xlevels.push(y.1.len() as i32);
     });
-
+    let spacing = 350.0;
     let (xOrdering, x_ranks) = organize_xpositions(to_rank_over_view.clone(), connections.clone());
     items.iter().for_each(|item| {
         let ranks = to_rank_over_view
@@ -92,8 +92,8 @@ pub fn organize_positions(
         let y_level = ranks.0;
 
         let size = item.get().size.get();
-        let y_position = 100.0 + (size.y + 145.0) * y_level as f64;
-        let x_position = 500.0 + x_level * (size.x + 145.0);
+        let y_position = spacing / 2.0 + (size.y + 145.0) * y_level as f64;
+        let x_position = spacing * 2.0 + x_level * (size.x + 145.0);
         item.get().realPosition.set(Position {
             x: x_position,
             y: y_position,

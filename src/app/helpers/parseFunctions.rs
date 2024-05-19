@@ -166,7 +166,7 @@ fn HandleClass(tokens: &mut Vec<Token>, items: &mut Vec<RwSignal<MoveBoxItem>>, 
     let item = create_rw_signal(MoveBoxItem {
         position: create_rw_signal(Position { x: 0.0, y: 0.0 }),
         realPosition: create_rw_signal(Position { x: 0.0, y: 0.0 }),
-        size: create_rw_signal(Position { x: 20.0, y: 20.0 }),
+        size: create_rw_signal(Position { x: 100.0, y: 100.0 }),
         isDragging: create_rw_signal(false),
         key: format!("{}:{}", counter, items.len().to_string()),
         value: create_rw_signal(name),

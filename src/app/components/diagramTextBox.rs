@@ -3,9 +3,13 @@ use crate::app::{
     tio::tioModal::TioModal,
 };
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
-use leptos::*;
+use leptos::{
+    server_fn::codec::{self, Json},
+    *,
+};
 use leptos_router::use_query_map;
-use log::debug;
+use leptos_use::utils::StringCodec;
+use leptos_use::{storage::use_local_storage, utils::FromToStringCodec};
 
 use crate::app::{
     structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem},
@@ -22,6 +26,7 @@ pub fn DiagramTextBox(
     let text_area_ref = create_node_ref::<leptos::html::Textarea>();
     let (disableImport, setDisableImport) = create_signal(true);
     let openShowDialog = create_rw_signal(false);
+    let (state, set_state, reset) = use_local_storage::<String, FromToStringCodec>("diagram-state");
 
     let urlState = use_query_map();
 
@@ -54,7 +59,10 @@ pub fn DiagramTextBox(
             .replace("%0D%0A", "\n");
         setText(diagram_string);
         handleImport();
-    };
+    } else if (state.get() != "") {
+        setText(state.get());
+        handleImport();
+    }
 
     let printDiagram = move || {
         let mut connectionString = String::from(":::mermaid\n");
@@ -81,6 +89,7 @@ pub fn DiagramTextBox(
     create_effect(move |_| {
         let newText = printDiagram();
         setText(newText.clone());
+        set_state(newText.clone());
         text_area_ref
             .get()
             .unwrap()
@@ -88,7 +97,7 @@ pub fn DiagramTextBox(
     });
 
     view! {
-        <div style="z-index:10; position: absolute; right: 0vw; width: 20vw; height: 100%; top: 0; color : black; background-color: white">
+        <div style="z-index:10; position: absolute; right: 0vw; width: 20.1vw; height: 100%; top: 0; color : black; background-color: white">
             <div style="position: absolute; right: 2vw; width: 15vw; height: 50%; top: 0">
                 <h2>Mermaid Diagram</h2>
 

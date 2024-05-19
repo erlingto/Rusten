@@ -93,7 +93,7 @@ pub fn CanvasForever(
 
     let renderCanvas = move |canvasref: NodeRef<Canvas>, offsetX: f64, offsetY: f64, scale: f64| {
         let cellSize = 100.0;
-        let strokeStyle = "rgb(0,0,0)";
+        let strokeStyle = "rgb(0,0,0, 0.2)";
         let lineWidth = 1.0;
         let canvas = canvasref.get();
         if canvas.is_some() {
@@ -317,8 +317,8 @@ pub fn CanvasForever(
             />
         </For>
         <div style="position: absolute; top: 0vh; height: 0.7vh; width: 95 vw; z-index:10; color : black; background-color: white;"></div>
-        <div style="position: absolute; top: 0.7vh; left: 0vh; height: 95vh; width: 0.4vw; z-index:10; color : black; background-color: white;"></div>
-        <div style="position: absolute; bottom: 0vh; height: 6vh; width: 90%; z-index:10; color : black; background-color: white;">
+        <div style="position: absolute; top: 0.0vh; left: 0.0vh; height: 95vh; width: 0.3vw; z-index:10; color : black; background-color: white;"></div>
+        <div style="position: absolute; left:0vw; bottom: 0vh; height: 6vh; width: 90%; z-index:10; color : black; background-color: white;">
             offsetX: {offsetX} offsetY: {offsetY} scale: {scale} , mousePosition {mouseX} , {mouseY}
         </div>
     }
