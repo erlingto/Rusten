@@ -13,4 +13,5 @@ pub struct MoveBoxItem {
     pub isDragging: RwSignal<bool>,
     pub attributes: RwSignal<Vec<MoveBoxAttribute>>,
     pub size: RwSignal<Position>,
+    pub mounted: RwSignal<bool>,
 }

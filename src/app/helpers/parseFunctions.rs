@@ -122,7 +122,7 @@ pub fn createState(
                 continue;
             }
             if token.tokenType == TokenType::ClassStart {
-                HandleClass(&token, &mut tokens, &mut items, counter);
+                HandleClass(&mut tokens, &mut items, counter);
             } else if token.tokenType == TokenType::Text {
                 HandleConnection(&mut tokens, tokenO, &items, &mut connections, counter);
             }
@@ -153,12 +153,7 @@ fn SearchName(tokens: &mut Vec<Token>) -> String {
     name
 }
 
-fn HandleClass(
-    token: &Token,
-    tokens: &mut Vec<Token>,
-    items: &mut Vec<RwSignal<MoveBoxItem>>,
-    counter: i32,
-) {
+fn HandleClass(tokens: &mut Vec<Token>, items: &mut Vec<RwSignal<MoveBoxItem>>, counter: i32) {
     let mut attributes = vec![];
     let name = SearchName(tokens);
     FilterNewLines(tokens);
@@ -177,6 +172,7 @@ fn HandleClass(
         value: create_rw_signal(name),
         attributes: create_rw_signal(attributes.clone()),
         should_render: create_rw_signal(true),
+        mounted: create_rw_signal(false),
     });
     items.push(item);
 }

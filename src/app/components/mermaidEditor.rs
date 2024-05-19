@@ -12,7 +12,7 @@ pub fn MermaidEditor() -> impl IntoView {
     let connections = create_rw_signal(Vec::<RwSignal<ConnectionItem>>::new());
     let is_connecting = create_rw_signal(false);
     let new_connection_start = create_rw_signal(None::<RwSignal<MoveBoxItem>>);
-    let nextPosition = create_rw_signal(Position { x: 20.0, y: 20.0 });
+    let nextPosition = create_rw_signal(Position { x: 0.0, y: 0.0 });
 
     fn AddDiv(moveBoxes: RwSignal<Vec<RwSignal<MoveBoxItem>>>, nextPosition: Position) {
         let ownedString = "div".to_owned();
@@ -28,6 +28,7 @@ pub fn MermaidEditor() -> impl IntoView {
             isDragging: create_rw_signal(false),
             size: create_rw_signal(Position { x: 100.0, y: 200.0 }),
             should_render: create_rw_signal(true),
+            mounted: create_rw_signal(false),
         });
         newMoveBoxes.push(Data);
         moveBoxes.set(newMoveBoxes);

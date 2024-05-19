@@ -37,6 +37,20 @@ pub fn CanvasForever(
     let offsetX = create_rw_signal(0.0);
     let offsetY = create_rw_signal(0.0);
 
+    let _ = create_effect(move |_| {
+        items.get().iter().for_each(|x| {
+            let realPosition = x.get().realPosition;
+            if x.get().mounted.get() == false {
+                realPosition.set(Position {
+                    x: realPosition.get().x - offsetX.get(),
+                    y: realPosition.get().y - offsetY.get(),
+                });
+
+                x.get().mounted.set(true);
+            }
+        });
+    });
+
     let toVirtualPosition = move |position: Position| -> Position {
         let x = (position.x + offsetX.get()) * scale.get();
         let y = (position.y + offsetY.get()) * scale.get();
