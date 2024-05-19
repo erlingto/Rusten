@@ -1,11 +1,32 @@
+use leptos::callback;
 use leptos::html::Div;
 use leptos::Children;
 use leptos::*;
 use leptos_use::core::Position;
 use leptos_use::{use_element_size, UseElementSizeReturn};
+use log::debug;
+
 #[component]
 pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> impl IntoView {
     let cardEl = create_node_ref::<Div>();
+    let scale = use_context::<RwSignal<f64>>().expect("there to be a `scale` signal provided");
+
+    let sizeX = Signal::derive(move || size.get().x * scale.get());
+    let sizeY = Signal::derive(move || size.get().y * scale.get());
+    let mounted = create_rw_signal(false);
+    let isResizing = create_rw_signal(false);
+    let UseElementSizeReturn { width, height } = use_element_size(cardEl);
+
+    let handleResize = move || {
+        if (isResizing.get() == false) {
+            return;
+        }
+        let sizePos = Position {
+            x: width.get() / scale.get(),
+            y: height.get() / scale.get(),
+        };
+        size.set(sizePos);
+    };
 
     let resize_string = if resize {
         "resize: both; overflow: hidden;"
@@ -13,8 +34,6 @@ pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> im
         ""
     };
 
-    let sizeX = Signal::derive(move || size.get().x);
-    let sizeY = Signal::derive(move || size.get().y);
     view! {
         <div
             node_ref=cardEl
@@ -26,6 +45,12 @@ pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> im
                     sizeY.get(),
                 )
             }
+
+            on:mousedown=move |event| {
+                isResizing.set(true);
+            }
+
+            on:mouseup=move |event| { handleResize() }
         >
 
             {children()}
