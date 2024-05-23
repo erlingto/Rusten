@@ -1,4 +1,4 @@
-use leptos::{create_rw_signal, RwSignal, SignalGet};
+use leptos::{create_rw_signal, RwSignal, SignalGet, SignalGetUntracked};
 use leptos_use::core::Position;
 use log::debug;
 
@@ -222,8 +222,12 @@ fn HandleConnection(
     let fromName: String = from.value.chars().filter(|x| x.is_alphanumeric()).collect();
     let toName: String = to.value.chars().filter(|x| x.is_alphanumeric()).collect();
     assert!(to.tokenType == TokenType::Text);
-    let fromItem = items.iter().find(|x| x.get().value.get() == fromName);
-    let toItem = items.iter().find(|x| x.get().value.get() == toName);
+    let fromItem = items
+        .iter()
+        .find(|x| x.get_untracked().value.get_untracked() == fromName);
+    let toItem = items
+        .iter()
+        .find(|x| x.get_untracked().value.get_untracked() == toName);
     if (fromItem.is_some() && toItem.is_some()) {
         let connection = create_rw_signal(ConnectionItem {
             key: format!("{}:{}", counter, connections.len().to_string()),

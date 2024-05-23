@@ -1,3 +1,4 @@
+#![feature(get_many_mut)]
 use crate::app::App;
 pub mod app;
 use leptos::*;
