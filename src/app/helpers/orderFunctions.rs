@@ -242,8 +242,6 @@ pub fn organize_positions_fruchterman_reingold(
             x: position.x * scale_value + positive_offset,
             y: position.y * scale_value,
         };
-        debug!("{}", newPos.x);
-        debug!("{}", newPos.y);
         move_box.realPosition.set(newPos);
     });
 

@@ -1,31 +1,43 @@
-<!DOCTYPE html><html><head>
-<link rel="preload" href="/RustenV2-4a1cc2123dac64db_bg.wasm" as="fetch" type="application/wasm" crossorigin="anonymous" integrity="sha384-oXt-NsKbMzn2KJHoxJJqVN0nWjDvDKle9BkjE0_6RDG7v4ECR0jwIMnUWQvWAiq2">
-<link rel="modulepreload" href="/RustenV2-4a1cc2123dac64db.js" crossorigin="anonymous" integrity="sha384-1T-pL8wa5c2Ilb_Ed33-ilM2k4yTbL4pXStnfXuep6pOGl3u8axla4njFpfTShxp"></head>
+<!DOCTYPE html>
+<html>
+  <head>
+    <link
+      rel="preload"
+      href="/RustenV2-65ff9ccc97f774b_bg.wasm"
+      as="fetch"
+      type="application/wasm"
+      crossorigin="anonymous"
+      integrity="sha384-gWq8SzbUhkd-M_xIOAHb87219YMBm_Re7r_c7ULOFlqyK9rsjvEIF2tLaQBpqM7Z"
+    />
+    <link
+      rel="modulepreload"
+      href="/RustenV2-65ff9ccc97f774b.js"
+      crossorigin="anonymous"
+      integrity="sha384-kFi7Lw9tqTUKRT_wtUXsKaqLpe0JeEIByayGio91uM-_XJ5qkq2Kt1thr8M_TpUJ"
+    />
+  </head>
 
   <body>
+    <script type="module">
+      import init, * as bindings from "/RustenV2-65ff9ccc97f774b.js";
+      init("/RustenV2-65ff9ccc97f774b_bg.wasm");
+      window.wasmBindings = bindings;
+    </script>
+    <script>
+      "use strict";
 
+      (function () {
+        const address = "{{__TRUNK_ADDRESS__}}";
+        let protocol = "";
+        protocol = protocol
+          ? protocol
+          : window.location.protocol === "https:"
+          ? "wss"
+          : "ws";
+        const url = protocol + "://" + address + "/_trunk/ws";
 
-<script type="module">
-import init, * as bindings from '/RustenV2-4a1cc2123dac64db.js';
-init('/RustenV2-4a1cc2123dac64db_bg.wasm');
-window.wasmBindings = bindings;
-
-</script><script>"use strict";
-
-(function () {
-
-    const address = '{{__TRUNK_ADDRESS__}}';
-    let protocol = '';
-    protocol =
-        protocol
-            ? protocol
-            : window.location.protocol === 'https:'
-                ? 'wss'
-                : 'ws';
-    const url = protocol + '://' + address + '/_trunk/ws';
-
-    class Overlay {
-        constructor() {
+        class Overlay {
+          constructor() {
             // create an overlay
             this._overlay = document.createElement("div");
             const style = this._overlay.style;
@@ -55,8 +67,9 @@ window.wasmBindings = bindings;
             this._message = document.createElement("div");
             this._message.style.whiteSpace = "pre-wrap";
 
-            const icon= document.createElement("div");
-            icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#dc3545" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>';
+            const icon = document.createElement("div");
+            icon.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#dc3545" viewBox="0 0 16 16"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>';
             this._title.prepend(icon);
 
             container.append(this._title, this._message);
@@ -64,78 +77,76 @@ window.wasmBindings = bindings;
 
             this._inject();
             window.setInterval(() => {
-                this._inject();
+              this._inject();
             }, 250);
-        }
+          }
 
-        set reason(reason) {
+          set reason(reason) {
             this._message.textContent = reason;
-        }
+          }
 
-        _inject() {
+          _inject() {
             if (!this._overlay.isConnected) {
-                // prepend it
-                document.body?.prepend(this._overlay);
+              // prepend it
+              document.body?.prepend(this._overlay);
             }
+          }
         }
 
-    }
-
-    class Client {
-        constructor(url) {
+        class Client {
+          constructor(url) {
             this.url = url;
             this.poll_interval = 5000;
             this._overlay = null;
-        }
+          }
 
-        start() {
+          start() {
             const ws = new WebSocket(this.url);
             ws.onmessage = (ev) => {
-                const msg = JSON.parse(ev.data);
-                switch (msg.type) {
-                    case "reload":
-                        this.reload();
-                        break;
-                    case "buildFailure":
-                        this.buildFailure(msg.data)
-                        break;
-                }
+              const msg = JSON.parse(ev.data);
+              switch (msg.type) {
+                case "reload":
+                  this.reload();
+                  break;
+                case "buildFailure":
+                  this.buildFailure(msg.data);
+                  break;
+              }
             };
             ws.onclose = this.onclose;
-        }
+          }
 
-        onclose() {
-            window.setTimeout(
-                () => {
-                    // when we successfully reconnect, we'll force a
-                    // reload (since we presumably lost connection to
-                    // trunk due to it being killed, so it will have
-                    // rebuilt on restart)
-                    const ws = new WebSocket(this.url);
-                    ws.onopen = () => window.location.reload();
-                    ws.onclose = this.onclose;
-                },
-                this.poll_interval);
-        }
+          onclose() {
+            window.setTimeout(() => {
+              // when we successfully reconnect, we'll force a
+              // reload (since we presumably lost connection to
+              // trunk due to it being killed, so it will have
+              // rebuilt on restart)
+              const ws = new WebSocket(this.url);
+              ws.onopen = () => window.location.reload();
+              ws.onclose = this.onclose;
+            }, this.poll_interval);
+          }
 
-        reload() {
+          reload() {
             window.location.reload();
-        }
+          }
 
-        buildFailure({reason}) {
+          buildFailure({ reason }) {
             // also log the console
             console.error("Build failed:", reason);
 
             console.debug("Overlay", this._overlay);
 
             if (!this._overlay) {
-                this._overlay = new Overlay();
+              this._overlay = new Overlay();
             }
             this._overlay.reason = reason;
+          }
         }
-    }
 
-    new Client(url).start();
-
-})()
-</script></body></html>
+        new Client(url).start();
+      })();
+    </script>
+  </body>
+</html>
