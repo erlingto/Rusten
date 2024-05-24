@@ -133,10 +133,8 @@ impl Graph {
                 if dist > 0.0 {
                     node.pos.x += (node.disp.x / dist) * dist.min(speed);
                     node.pos.y += (node.disp.y / dist) * dist.min(speed);
-                    if (max_disp > dist) {
-                        max_disp = max_disp;
-                    } else {
-                        max_disp = max_disp.max(dist);
+                    if (dist > max_disp) {
+                        max_disp = dist;
                     }
                 }
                 node.pos.x += (0.0 - node.pos.x) * gravity;
