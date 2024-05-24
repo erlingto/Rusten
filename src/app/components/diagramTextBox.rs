@@ -1,5 +1,8 @@
 use crate::app::{
-    helpers::{orderFunctions::organize_positions, parseFunctions::importDiagram},
+    helpers::{
+        orderFunctions::{organize_positions_fruchterman_reingold, set_size},
+        parseFunctions::importDiagram,
+    },
     tio::tioModal::TioModal,
 };
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
@@ -8,7 +11,6 @@ use leptos::{
     *,
 };
 use leptos_router::use_query_map;
-use leptos_use::utils::StringCodec;
 use leptos_use::{storage::use_local_storage, utils::FromToStringCodec};
 
 use crate::app::{
@@ -32,7 +34,8 @@ pub fn DiagramTextBox(
 
     let handleImport = move || {
         let (mut newItems, mut newConnections) = importDiagram(text.get(), importCount.get());
-        newItems = organize_positions(newItems, newConnections.clone());
+        newItems = set_size(newItems);
+        newItems = organize_positions_fruchterman_reingold(newItems, newConnections.clone());
         setImportCount(importCount.get() + 1);
         items.set(newItems);
         connections.set(newConnections);

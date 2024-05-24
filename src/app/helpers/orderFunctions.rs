@@ -1,8 +1,12 @@
-use super::dictionary::Dict;
-use crate::app::structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem};
-use leptos::{RwSignal, SignalGet, SignalSet};
+use super::{dictionary::Dict, fruchterman_reingold::Graph};
+use crate::app::{
+    components::canvas::move_box,
+    structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem},
+};
+use leptos::{RwSignal, SignalGet, SignalGetUntracked, SignalSet};
 use leptos_use::core::Position;
-use std::vec;
+use log::debug;
+use std::{collections::HashMap, vec};
 
 pub fn organize_positions(
     items: Vec<RwSignal<MoveBoxItem>>,
@@ -206,4 +210,69 @@ fn order(ordering: &mut Dict<String, f64>, items: &Vec<String>, x_ranks: &mut Di
         ordering.insert(x.0.clone(), index - median);
         index += 1.0;
     });
+}
+
+pub fn organize_positions_fruchterman_reingold(
+    items: Vec<RwSignal<MoveBoxItem>>,
+    connections: Vec<RwSignal<ConnectionItem>>,
+) -> Vec<RwSignal<MoveBoxItem>> {
+    let scale_value = 500.0;
+    let positive_offset = 500.0;
+    let itemIds = items.iter().map(|x| x.get().key.clone()).collect();
+    let connectionIds = connections
+        .iter()
+        .map(|x| {
+            (
+                x.get_untracked().from.get_untracked().key.clone(),
+                x.get_untracked().to.get_untracked().key.clone(),
+            )
+        })
+        .collect();
+    let mut graph = Graph::new(itemIds, connectionIds);
+    graph.fruchterman_reingold(1000, 1.0, 0.1, 0.1, 0.001);
+    let positions: HashMap<_, _> = graph
+        .nodes
+        .iter()
+        .map(|node| (&node.id, &node.pos))
+        .collect();
+    items.iter().for_each(|item| {
+        let move_box = item.get_untracked();
+        let position = positions[&move_box.key];
+        let newPos = Position {
+            x: position.x * scale_value + positive_offset,
+            y: position.y * scale_value,
+        };
+        debug!("{}", newPos.x);
+        debug!("{}", newPos.y);
+        move_box.realPosition.set(newPos);
+    });
+
+    return items;
+}
+
+fn find_longest_text(item: MoveBoxItem) -> f64 {
+    let mut longest_len = 20.0;
+    item.attributes.get().iter().for_each(|attribute| {
+        let len = attribute.value.get().len() as f64;
+        if (len > longest_len) {
+            longest_len = len
+        }
+    });
+    return longest_len;
+}
+
+pub fn set_size(items: Vec<RwSignal<MoveBoxItem>>) -> Vec<RwSignal<MoveBoxItem>> {
+    let const_scale_x = 8.0;
+    let const_scale_y = 20.0;
+
+    items.iter().for_each(|item| {
+        let longest_text_length = find_longest_text(item.get()) as f64;
+        let num_attributes = item.get().attributes.get().len() as f64;
+
+        item.get().size.set(Position {
+            x: longest_text_length * const_scale_x,
+            y: 40.0 + num_attributes * const_scale_y,
+        })
+    });
+    items
 }
