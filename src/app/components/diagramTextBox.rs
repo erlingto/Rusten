@@ -5,17 +5,14 @@ use crate::app::{
     },
     tio::tioModal::TioModal,
 };
-use base64::{engine::general_purpose::URL_SAFE, Engine as _};
-use leptos::{
-    *,
-};
-use leptos_router::use_query_map;
-use leptos_use::{storage::use_local_storage, utils::FromToStringCodec};
-
 use crate::app::{
     structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem},
     tio::tioButton::TioButton,
 };
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+use leptos::*;
+use leptos_router::use_query_map;
+use leptos_use::{storage::use_local_storage, utils::FromToStringCodec};
 
 #[component]
 pub fn DiagramTextBox(
@@ -27,7 +24,8 @@ pub fn DiagramTextBox(
     let text_area_ref = create_node_ref::<leptos::html::Textarea>();
     let (disableImport, setDisableImport) = create_signal(true);
     let openShowDialog = create_rw_signal(false);
-    let (state, set_state, _reset) = use_local_storage::<String, FromToStringCodec>("diagram-state");
+    let (state, set_state, _reset) =
+        use_local_storage::<String, FromToStringCodec>("diagram-state");
 
     let urlState = use_query_map();
 
