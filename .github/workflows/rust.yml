@@ -16,7 +16,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy, rustfmt
-      - uses: Swatinem/rust-cache@v2
       - name: Setup Rust
         run: |
           rustup target add wasm32-unknown-unknown
