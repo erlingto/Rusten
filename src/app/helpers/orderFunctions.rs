@@ -1,8 +1,5 @@
 use super::{dictionary::Dict, fruchterman_reingold::Graph};
-use crate::app::{
-    components::canvas::move_box,
-    structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem},
-};
+use crate::app::structs::{connectionItem::ConnectionItem, moveBoxItem::MoveBoxItem};
 use leptos::{RwSignal, SignalGet, SignalGetUntracked, SignalSet};
 use leptos_use::core::Position;
 use log::debug;
@@ -33,12 +30,8 @@ pub fn organize_positions(
 
     items.iter().for_each(|x| {
         let key = x.get().key.to_string();
-        to_rankneighbour_weighted
-            .insert(key.clone(), to_rank_dict.get(key.clone()).unwrap().clone());
-        from_rankneighbour_weighted.insert(
-            key.clone(),
-            from_rank_dict.get(key.clone()).unwrap().clone(),
-        );
+        to_rankneighbour_weighted.insert(key.clone(), *to_rank_dict.get(key.clone()).unwrap());
+        from_rankneighbour_weighted.insert(key.clone(), *from_rank_dict.get(key.clone()).unwrap());
     });
 
     connections.iter().for_each(|x| {
@@ -85,7 +78,7 @@ pub fn organize_positions(
         xlevels.push(y.1.len() as i32);
     });
     let spacing = 350.0;
-    let (xOrdering, x_ranks) = organize_xpositions(to_rank_over_view.clone(), connections.clone());
+    let (xOrdering, _x_ranks) = organize_xpositions(to_rank_over_view.clone(), connections.clone());
     items.iter().for_each(|item| {
         let ranks = to_rank_over_view
             .clone()
@@ -107,7 +100,7 @@ pub fn organize_positions(
             y: y_position,
         });
     });
-    return (items);
+    items
 }
 
 fn get_neighbours(connections: Vec<RwSignal<ConnectionItem>>) -> Dict<String, Vec<String>> {
@@ -135,7 +128,7 @@ fn get_xrank(item_id: String, x_ranks: &Dict<String, f64>) -> f64 {
     if rank.is_some() {
         return *rank.unwrap();
     }
-    return 0.0;
+    0.0
 }
 
 fn organize_xpositions(
@@ -147,7 +140,7 @@ fn organize_xpositions(
         .into_iter()
         .map(|x| x.0)
         .collect::<Vec<i32>>();
-    if to_rank_keys.len() == 0 {
+    if to_rank_keys.is_empty() {
         return (Dict::<String, f64>::new(), Dict::<String, f64>::new());
     }
     let mut x_ranks = Dict::<String, f64>::new();
@@ -157,14 +150,14 @@ fn organize_xpositions(
     to_rank_keys.sort_by(|a, b| a.partial_cmp(b).unwrap());
 
     let first_key = to_rank_keys.first().unwrap();
-    initialize(&to_rank_over_view[first_key.clone()], &mut x_ranks);
+    initialize(&to_rank_over_view[*first_key], &mut x_ranks);
     to_rank_keys.into_iter().for_each(|key| {
         let items = to_rank_over_view[key].clone();
         populate_with_neighbour_values(&items, &neighbour_dict, &mut x_ranks);
         populate_with_neighbour_values(&items, &neighbour_dict, &mut x_ranks);
         order(&mut ordering, &items, &mut x_ranks)
     });
-    return (ordering, x_ranks);
+    (ordering, x_ranks)
 }
 
 fn populate_with_neighbour_values(
@@ -174,10 +167,10 @@ fn populate_with_neighbour_values(
 ) {
     items.iter().for_each(|item| {
         let neighbours = neighbour_dict.get(item.clone());
-        let mut xrank = get_xrank(item.clone(), &x_ranks);
+        let mut xrank = get_xrank(item.clone(), x_ranks);
         if neighbours.is_some() {
             neighbours.unwrap().iter().for_each(|neighbour| {
-                let neigh_bour_xrank = get_xrank(neighbour.clone(), &x_ranks);
+                let neigh_bour_xrank = get_xrank(neighbour.clone(), x_ranks);
                 xrank += neigh_bour_xrank;
             });
         }
@@ -187,7 +180,7 @@ fn populate_with_neighbour_values(
 fn initialize(items: &Vec<String>, x_ranks: &mut Dict<String, f64>) {
     let mut order = vec![];
     items.iter().for_each(|item| {
-        order.push((item.clone(), get_xrank(item.clone(), &x_ranks)));
+        order.push((item.clone(), get_xrank(item.clone(), x_ranks)));
     });
     let mut index = 0.0;
     let increments = 100.0;
@@ -201,7 +194,7 @@ fn initialize(items: &Vec<String>, x_ranks: &mut Dict<String, f64>) {
 fn order(ordering: &mut Dict<String, f64>, items: &Vec<String>, x_ranks: &mut Dict<String, f64>) {
     let mut order = vec![];
     items.iter().for_each(|item| {
-        order.push((item.clone(), get_xrank(item.clone(), &x_ranks)));
+        order.push((item.clone(), get_xrank(item.clone(), x_ranks)));
     });
     order.sort_by(|a, b| (b.1.partial_cmp(&a.1).unwrap()));
     let mut index = 0.0;
@@ -230,7 +223,7 @@ pub fn organize_positions_fruchterman_reingold(
         })
         .collect();
     let mut graph = Graph::new(itemIds, connectionIds);
-    graph.fruchterman_reingold(100, 2.0, 0.1, 0.1, 0.001);
+    graph.fruchterman_reingold(1000, 2.0, 0.09, 0.1, 0.001);
     let positions: HashMap<_, _> = graph
         .nodes
         .iter()
@@ -248,26 +241,24 @@ pub fn organize_positions_fruchterman_reingold(
     });
     fix_overlap(&items);
 
-    return items;
+    items
 }
 
 fn fix_overlap(items: &Vec<RwSignal<MoveBoxItem>>) {
     let num_items = items.len();
-    debug!("num_items: {}", num_items);
     let mut iterations = 0;
     loop {
         let mut overlaps_resolved = false;
         for i in 0..num_items {
             for j in (i + 1)..num_items {
                 let (node1, node2) = (&mut items[i].get(), &mut items[j].get());
-                if (check_overlap(node1, node2)) {
+                if check_overlap(node1, node2) {
                     resolve_overlap(node1, node2);
                     overlaps_resolved = true;
                 }
             }
         }
-        if !overlaps_resolved || iterations > 1000 {
-            debug!("iterations: {}", iterations);
+        if !overlaps_resolved || iterations > 2 {
             break;
         }
 
@@ -279,22 +270,22 @@ pub fn find_longest_text(item: MoveBoxItem) -> f64 {
     let mut longest_len = 20.0;
     item.attributes.get().iter().for_each(|attribute| {
         let len = attribute.value.get().len() as f64;
-        if (len > longest_len) {
+        if len > longest_len {
             longest_len = len
         }
     });
-    return longest_len;
+    longest_len
 }
 
 pub fn find_longest_text_in_items(items: Vec<RwSignal<MoveBoxItem>>) -> f64 {
     let mut longest_len = 20.0;
     items.iter().for_each(|item| {
         let len = find_longest_text(item.get());
-        if (len > longest_len) {
+        if len > longest_len {
             longest_len = len
         }
     });
-    return longest_len;
+    longest_len
 }
 
 fn smallest_distances_for_each_position(positions: &Vec<i32>) -> Vec<Option<i32>> {
@@ -359,12 +350,6 @@ fn resolve_overlap(move_box1: &mut MoveBoxItem, move_box2: &mut MoveBoxItem) {
     if overlap_x <= 0.0 || overlap_y <= 0.0 {
         return;
     }
-    debug!(
-        "name1 and name2: {:?} {:?}",
-        move_box1.value.get(),
-        move_box2.value.get()
-    );
-    debug!("overlap_x and overlap_y: {:?} {:?}", overlap_x, overlap_y);
     overlap_x += extra_space;
     overlap_y += extra_space;
 
@@ -412,15 +397,15 @@ pub fn set_size(items: Vec<RwSignal<MoveBoxItem>>) -> Vec<RwSignal<MoveBoxItem>>
     let const_scale_y = 20.0;
 
     items.iter().for_each(|item| {
-        let longest_text_length = find_longest_text(item.get()) as f64;
+        let longest_text_length = find_longest_text(item.get());
         let num_attributes = item.get().attributes.get().len() as f64;
         let mut x = longest_text_length * const_scale_x;
         let y = 40.0 + num_attributes * const_scale_y;
-        if (x <= 0.0) {
+        if x <= 0.0 {
             x = 60.0;
         }
 
-        item.get().size.set(Position { x: x, y: y })
+        item.get().size.set(Position { x, y })
     });
     items
 }

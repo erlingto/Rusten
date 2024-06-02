@@ -14,7 +14,7 @@ pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> im
     let UseElementSizeReturn { width, height } = use_element_size(cardEl);
 
     let handleResize = move || {
-        if (isResizing.get() == false) {
+        if !isResizing.get() {
             return;
         }
         let sizePos = Position {
@@ -42,11 +42,11 @@ pub fn TioCard(children: Children, resize: bool, size: RwSignal<Position>) -> im
                 )
             }
 
-            on:mousedown=move |event| {
+            on:mousedown=move |_event| {
                 isResizing.set(true);
             }
 
-            on:mouseup=move |event| { handleResize() }
+            on:mouseup=move |_event| { handleResize() }
         >
 
             {children()}

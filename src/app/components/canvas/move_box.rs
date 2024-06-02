@@ -11,7 +11,7 @@ use leptos_use::{
     UseDraggableReturn,
 };
 #[component]
-pub fn MoveBox<F: Fn() -> () + 'static>(
+pub fn MoveBox<F: Fn() + 'static>(
     is_connecting: RwSignal<bool>,
     scale: RwSignal<f64>,
     move_box_item: RwSignal<MoveBoxItem>,
@@ -48,7 +48,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
 
             return true;
         }
-        return false;
+        false
     };
 
     let updateRealPosition = move |event: UseDraggableCallbackArgs| {
@@ -72,7 +72,7 @@ pub fn MoveBox<F: Fn() -> () + 'static>(
         dragEl,
         UseDraggableOptions::default()
             .initial_value(position)
-            .on_start(move |event| startDrag(event))
+            .on_start(startDrag)
             .on_end(move |event| {
                 updateRealPosition(event);
             }),
