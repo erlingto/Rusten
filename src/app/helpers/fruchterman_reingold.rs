@@ -40,7 +40,10 @@ impl Graph {
 
         for (id1, id2) in &edges {
             node_map.get_mut(id1).unwrap().degree += 1;
-            node_map.get_mut(id2).unwrap().degree += 1;
+        }
+
+        for (id1, id2) in &edges {
+            node_map.get_mut(id1).unwrap().degree += node_map.get_mut(id2).unwrap().degree;
         }
 
         let nodes: Vec<BoxNode> = node_map.values().cloned().collect();
@@ -74,10 +77,6 @@ impl Graph {
 
         fn attractive_force(dist: f64, k: f64) -> f64 {
             dist * dist / k
-        }
-
-        fn degree_force(degree: usize, y: f64, k: f64) -> f64 {
-            (degree as f64) * k - y
         }
 
         for _ in 0..iterations {
@@ -139,9 +138,6 @@ impl Graph {
                 }
                 node.pos.x += (0.0 - node.pos.x) * gravity;
                 node.pos.y += (0.0 - node.pos.y) * gravity;
-
-                // Apply degree force to pull higher degree nodes upwards
-                node.pos.y += degree_force(node.degree, node.pos.y, k) * gravity;
             }
 
             if max_disp < tolerance {

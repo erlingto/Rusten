@@ -184,8 +184,8 @@ pub fn CanvasForever(
         let offsetChangeX = middleXCompensation;
         let offsetChangeY = middleYCompensation;
 
-        offsetX.set(offsetX.get() + offsetChangeX);
-        offsetY.set(offsetY.get() + offsetChangeY);
+        offsetX.set(offsetX.get_untracked() + offsetChangeX);
+        offsetY.set(offsetY.get_untracked() + offsetChangeY);
         reset_drag();
     };
 
