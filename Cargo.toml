@@ -13,7 +13,6 @@ leptos = { version = "0.6.4", features = ["csr", "nightly"] }
 leptos-use = "0.10.0"
 leptos_router = { version = "0.6.11", features = ["csr"] }
 log = "0.4.20"
-plotters = "0.3.6"
 rand = "0.8.5"
 styled = "0.2.0"
 stylist = "0.13.0"

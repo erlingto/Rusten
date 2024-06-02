@@ -2,7 +2,7 @@ use leptos::{html::Div, *};
 use leptos_use::{on_click_outside, use_element_hover};
 
 #[component]
-pub fn AttributeEditor<F: Fn() -> () + 'static>(
+pub fn AttributeEditor<F: Fn() + 'static>(
     attribute: RwSignal<String>,
     remove: F,
 ) -> impl IntoView {

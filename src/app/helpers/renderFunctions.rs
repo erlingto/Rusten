@@ -1,6 +1,6 @@
 use leptos::{RwSignal, SignalGet};
 use leptos_use::core::Position;
-use log::debug;
+
 use web_sys::{js_sys::Math, wasm_bindgen::JsValue, CanvasRenderingContext2d, DomRect};
 
 use crate::app::structs::{
@@ -98,15 +98,15 @@ pub fn render_grid(
 
     for i in 0..((width / scale) as i32 / cellSize as i32 + 1) {
         let mut x = (offsetX % cellSize) * scale;
-        x = x + i as f64 * cellSize * scale;
+        x += i as f64 * cellSize * scale;
         context.move_to(x, 0.0);
-        context.line_to(x, height as f64);
+        context.line_to(x, height);
     }
     for i in 0..((height / scale) as i32 / cellSize as i32 + 1) {
         let mut y = (offsetY % cellSize) * scale;
-        y = y + i as f64 * cellSize * scale;
+        y += i as f64 * cellSize * scale;
         context.move_to(0.0, y);
-        context.line_to(width as f64, y);
+        context.line_to(width, y);
     }
     context.stroke();
 }
@@ -122,8 +122,8 @@ pub fn render_connection_lines(
     if let Some(new_connection_start) = new_connection_start {
         let position_from = new_connection_start.get().position.get();
         let from_size = new_connection_start.get().size.get();
-        let x1 = (position_from.x + from_size.x * scale / 2.0 - dom_rect.left());
-        let y1 = (position_from.y + from_size.y * scale / 2.0 - dom_rect.top());
+        let x1 = position_from.x + from_size.x * scale / 2.0 - dom_rect.left();
+        let y1 = position_from.y + from_size.y * scale / 2.0 - dom_rect.top();
         let x2 = mouse_position.x - dom_rect.left();
         let y2 = mouse_position.y - dom_rect.top();
         context.set_stroke_style(&JsValue::from_str("black"));
@@ -197,5 +197,5 @@ pub fn shouldRender(position: Position, size: Position, width: f64, height: f64)
     let padding = 2.0;
     let xInBounds = position.x + size.x + padding >= 0.0 && position.x <= width + padding;
     let yInBounds = position.y + size.y + padding >= 0.0 && position.y <= height + padding;
-    return xInBounds && yInBounds;
+    xInBounds && yInBounds
 }

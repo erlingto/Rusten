@@ -1,4 +1,4 @@
-use leptos::{create_rw_signal, RwSignal, SignalGet, SignalGetUntracked};
+use leptos::{create_rw_signal, RwSignal, SignalGetUntracked};
 use leptos_use::core::Position;
 use log::debug;
 
@@ -11,60 +11,42 @@ use crate::app::structs::{
 
 pub fn parseToken(word: String) -> Token {
     match word.as_str() {
-        "classDiagram" => {
-            return Token {
-                tokenType: TokenType::DiagramStart,
-                value: word,
-            }
-        }
-        ":::mermaid" => {
-            return Token {
-                tokenType: TokenType::DiagramStart,
-                value: word,
-            }
-        }
-        "class" => {
-            return Token {
-                tokenType: TokenType::ClassStart,
-                value: word,
-            }
-        }
-        "+" => {
-            return Token {
-                tokenType: TokenType::AttributeStart,
-                value: word,
-            }
-        }
-        "{" => {
-            return Token {
-                tokenType: TokenType::AttributesStart,
-                value: word,
-            }
-        }
-        "}" => {
-            return Token {
-                tokenType: TokenType::AttributesEnd,
-                value: word,
-            }
-        }
-        "-->" => {
-            return Token {
-                tokenType: TokenType::ConnectionArrow,
-                value: word,
-            }
-        }
-        "\n" => {
-            return Token {
-                tokenType: TokenType::NewLine,
-                value: word,
-            }
-        }
-        _ => {
-            return Token {
-                tokenType: TokenType::Text,
-                value: word,
-            }
-        }
+        "classDiagram" => Token {
+            tokenType: TokenType::DiagramStart,
+            value: word,
+        },
+        ":::mermaid" => Token {
+            tokenType: TokenType::DiagramStart,
+            value: word,
+        },
+        "class" => Token {
+            tokenType: TokenType::ClassStart,
+            value: word,
+        },
+        "+" => Token {
+            tokenType: TokenType::AttributeStart,
+            value: word,
+        },
+        "{" => Token {
+            tokenType: TokenType::AttributesStart,
+            value: word,
+        },
+        "}" => Token {
+            tokenType: TokenType::AttributesEnd,
+            value: word,
+        },
+        "-->" => Token {
+            tokenType: TokenType::ConnectionArrow,
+            value: word,
+        },
+        "\n" => Token {
+            tokenType: TokenType::NewLine,
+            value: word,
+        },
+        _ => Token {
+            tokenType: TokenType::Text,
+            value: word,
+        },
     }
 }
 
@@ -73,18 +55,16 @@ pub fn splitText(line: String) -> Vec<String> {
     let mut current_word = String::new();
     for c in line.chars() {
         if c == '\n' {
-            if (!current_word.is_empty()) {
-                words.push(current_word.clone());
-                current_word.clear();
-            }
-            words.push(c.to_string());
-        } else if (!c.is_whitespace()) {
-            current_word.push(c);
-        } else {
             if !current_word.is_empty() {
                 words.push(current_word.clone());
                 current_word.clear();
             }
+            words.push(c.to_string());
+        } else if !c.is_whitespace() {
+            current_word.push(c);
+        } else if !current_word.is_empty() {
+            words.push(current_word.clone());
+            current_word.clear();
         }
     }
     if !current_word.is_empty() {
@@ -114,11 +94,11 @@ pub fn createState(
     tokens.reverse();
     let mut items: Vec<RwSignal<MoveBoxItem>> = vec![];
     let mut connections: Vec<RwSignal<ConnectionItem>> = vec![];
-    while (tokens.len() > 0) {
+    while !tokens.is_empty() {
         let tokenO = tokens.pop();
-        if (tokenO.is_some()) {
+        if tokenO.is_some() {
             let token = tokenO.clone().unwrap();
-            if (token.tokenType == TokenType::DiagramStart) {
+            if token.tokenType == TokenType::DiagramStart {
                 continue;
             }
             if token.tokenType == TokenType::ClassStart {
@@ -133,7 +113,7 @@ pub fn createState(
 
 fn FilterNewLines(tokens: &mut Vec<Token>) {
     let mut peekToken = tokens[tokens.len() - 1].clone();
-    while (peekToken.tokenType == TokenType::NewLine) {
+    while peekToken.tokenType == TokenType::NewLine {
         tokens.pop();
         peekToken = tokens[tokens.len() - 1].clone();
     }
@@ -143,11 +123,11 @@ fn SearchName(tokens: &mut Vec<Token>) -> String {
     let mut name = String::from("");
     FilterNewLines(tokens);
     let nameToken = tokens.pop().unwrap();
-    if (nameToken.tokenType == TokenType::Text) {
+    if nameToken.tokenType == TokenType::Text {
         name = nameToken
             .value
             .chars()
-            .filter(|x| x.is_alphanumeric())
+            .filter(|x| x != &'"' && x != &'`')
             .collect();
     }
     name
@@ -168,7 +148,7 @@ fn HandleClass(tokens: &mut Vec<Token>, items: &mut Vec<RwSignal<MoveBoxItem>>, 
         realPosition: create_rw_signal(Position { x: 0.0, y: 0.0 }),
         size: create_rw_signal(Position { x: 100.0, y: 100.0 }),
         isDragging: create_rw_signal(false),
-        key: format!("{}:{}", counter, items.len().to_string()),
+        key: format!("{}:{}", counter, items.len()),
         value: create_rw_signal(name),
         attributes: create_rw_signal(attributes.clone()),
         should_render: create_rw_signal(true),
@@ -181,19 +161,18 @@ fn HandleAttributes(token: &Option<Token>, tokens: &mut Vec<Token>) -> Vec<MoveB
     let mut attributes = vec![];
     let mut attributeValue = String::from("");
     let mut attTokenO = token.clone();
-    while (attTokenO.clone().is_some()
-        && attTokenO.clone().unwrap().tokenType != TokenType::AttributesEnd)
+    while attTokenO.clone().is_some()
+        && attTokenO.clone().unwrap().tokenType != TokenType::AttributesEnd
     {
         let mut textTokenO = attTokenO.clone();
-        while (textTokenO.is_some() && textTokenO.clone().unwrap().tokenType != TokenType::NewLine)
-        {
+        while textTokenO.is_some() && textTokenO.clone().unwrap().tokenType != TokenType::NewLine {
             let textToken = textTokenO.clone().unwrap();
-            if (textToken.tokenType == TokenType::Text) {
+            if textToken.tokenType == TokenType::Text {
                 attributeValue = format!("{} {}", attributeValue, textToken.value);
             }
             textTokenO = tokens.pop();
         }
-        if (!attributeValue.is_empty()) {
+        if !attributeValue.is_empty() {
             attributes.push(MoveBoxAttribute {
                 key: attributes.len().to_string(),
                 value: create_rw_signal(attributeValue.clone()),
@@ -213,14 +192,22 @@ fn HandleConnection(
     counter: i32,
 ) {
     let arrowToken = tokens.pop();
-    if (arrowToken.is_none()) {
+    if arrowToken.is_none() {
         return;
     }
     assert!(arrowToken.unwrap().tokenType == TokenType::ConnectionArrow);
     let from = token.unwrap();
     let to = tokens.pop().unwrap();
-    let fromName: String = from.value.chars().filter(|x| x.is_alphanumeric()).collect();
-    let toName: String = to.value.chars().filter(|x| x.is_alphanumeric()).collect();
+    let fromName: String = from
+        .value
+        .chars()
+        .filter(|x| x != &'"' && x != &'`')
+        .collect();
+    let toName: String = to
+        .value
+        .chars()
+        .filter(|x| x != &'"' && x != &'`')
+        .collect();
     assert!(to.tokenType == TokenType::Text);
     let fromItem = items
         .iter()
@@ -228,9 +215,9 @@ fn HandleConnection(
     let toItem = items
         .iter()
         .find(|x| x.get_untracked().value.get_untracked() == toName);
-    if (fromItem.is_some() && toItem.is_some()) {
+    if fromItem.is_some() && toItem.is_some() {
         let connection = create_rw_signal(ConnectionItem {
-            key: format!("{}:{}", counter, connections.len().to_string()),
+            key: format!("{}:{}", counter, connections.len()),
             from: *fromItem.unwrap(),
             to: *toItem.unwrap(),
         });

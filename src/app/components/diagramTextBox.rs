@@ -7,7 +7,6 @@ use crate::app::{
 };
 use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use leptos::{
-    server_fn::codec::{self, Json},
     *,
 };
 use leptos_router::use_query_map;
@@ -28,12 +27,12 @@ pub fn DiagramTextBox(
     let text_area_ref = create_node_ref::<leptos::html::Textarea>();
     let (disableImport, setDisableImport) = create_signal(true);
     let openShowDialog = create_rw_signal(false);
-    let (state, set_state, reset) = use_local_storage::<String, FromToStringCodec>("diagram-state");
+    let (state, set_state, _reset) = use_local_storage::<String, FromToStringCodec>("diagram-state");
 
     let urlState = use_query_map();
 
     let handleImport = move || {
-        let (mut newItems, mut newConnections) = importDiagram(text.get(), importCount.get());
+        let (mut newItems, newConnections) = importDiagram(text.get(), importCount.get());
         newItems = set_size(newItems);
         newItems = organize_positions_fruchterman_reingold(newItems, newConnections.clone());
         setImportCount(importCount.get() + 1);
@@ -46,15 +45,15 @@ pub fn DiagramTextBox(
         url.push_str("?diagram=");
         let encoded_diagram = URL_SAFE.encode(
             text.get()
-                .replace(" ", "%WhiteSpace%")
-                .replace("\n", "%0D%0A"),
+                .replace(' ', "%WhiteSpace%")
+                .replace('\n', "%0D%0A"),
         );
         url.push_str(encoded_diagram.as_str());
         url
     };
 
     let urlDiagramString = urlState.with(|params| params.get("diagram").cloned());
-    if (urlDiagramString.is_some()) {
+    if urlDiagramString.is_some() {
         let decoded_diagram = URL_SAFE.decode(urlDiagramString.clone().unwrap().as_bytes());
         let diagram_string = String::from_utf8(decoded_diagram.unwrap())
             .unwrap()
@@ -62,7 +61,7 @@ pub fn DiagramTextBox(
             .replace("%0D%0A", "\n");
         setText(diagram_string);
         handleImport();
-    } else if (state.get() != "") {
+    } else if state.get() != "" {
         setText(state.get());
         handleImport();
     }

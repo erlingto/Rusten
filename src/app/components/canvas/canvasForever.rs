@@ -7,8 +7,9 @@ use crate::app::structs::moveBoxItem::MoveBoxItem;
 use leptos::html::Canvas;
 use leptos::*;
 use leptos_use::core::Position;
-use leptos_use::{use_element_hover, use_mouse, UseMouseReturn};
+use leptos_use::{use_document, use_element_hover, use_mouse, use_window, UseMouseReturn};
 
+use log::debug;
 use wasm_bindgen::JsCast;
 use web_sys::wasm_bindgen::closure::Closure;
 
@@ -20,9 +21,18 @@ pub fn CanvasForever(
     is_connecting: RwSignal<bool>,
 ) -> impl IntoView {
     let mounted = create_rw_signal(false);
+    let document = use_document();
+    let window = use_window();
+    let innerHeight = window
+        .as_ref()
+        .unwrap()
+        .inner_height()
+        .unwrap()
+        .as_f64()
+        .unwrap();
+    let width = document.body().unwrap().client_width() as f64 * 0.8;
 
-    let width = document().body().unwrap().client_width() as f64 * 0.8;
-    let height = width / 1.8;
+    let height = innerHeight as f64 * 0.93;
     let isDragging = create_rw_signal(false);
     let canvasRef = create_node_ref::<leptos::html::Canvas>();
     let scale = create_rw_signal(1.0);
@@ -40,7 +50,7 @@ pub fn CanvasForever(
     let _ = create_effect(move |_| {
         items.get().iter().for_each(|x| {
             let realPosition = x.get().realPosition;
-            if x.get().mounted.get() == false {
+            if !x.get().mounted.get() {
                 realPosition.set(Position {
                     x: realPosition.get().x - offsetX.get(),
                     y: realPosition.get().y - offsetY.get(),
@@ -54,7 +64,7 @@ pub fn CanvasForever(
     let toVirtualPosition = move |position: Position| -> Position {
         let x = (position.x + offsetX.get()) * scale.get();
         let y = (position.y + offsetY.get()) * scale.get();
-        return Position { x, y };
+        Position { x, y }
     };
 
     let canvasRect = create_rw_signal(None::<web_sys::DomRect>);
@@ -142,17 +152,17 @@ pub fn CanvasForever(
 
     let handleStart = move |event: web_sys::MouseEvent| {
         event.prevent_default();
-        let x = mouseX.get_untracked() as f64;
-        let y = mouseY.get_untracked() as f64;
-        startX.set(x.clone() as f64);
-        startY.set(y.clone() as f64);
+        let x = mouseX.get_untracked();
+        let y = mouseY.get_untracked();
+        startX.set(x);
+        startY.set(y);
         isDragging.set(true);
     };
 
     let handleMove = move |_: web_sys::MouseEvent| {
         if isDragging.get_untracked() {
-            let x = mouseX.get_untracked() as f64;
-            let y = mouseY.get_untracked() as f64;
+            let x = mouseX.get_untracked();
+            let y = mouseY.get_untracked();
             let distanceX = x - startX.get();
             let distanceY = y - startY.get();
             offsetX.set(cumuDistanceX.get_untracked() + distanceX / scale.get_untracked());
@@ -162,7 +172,7 @@ pub fn CanvasForever(
 
     let handleScale = move |event: web_sys::WheelEvent| {
         event.prevent_default();
-        let mut delta = event.delta_y() as f64;
+        let mut delta = event.delta_y();
         delta = delta / 1000.0 * 100.0;
         delta = delta.round() / 100.0;
 
@@ -184,8 +194,8 @@ pub fn CanvasForever(
         let offsetChangeX = middleXCompensation;
         let offsetChangeY = middleYCompensation;
 
-        offsetX.set(offsetX.get() + offsetChangeX);
-        offsetY.set(offsetY.get() + offsetChangeY);
+        offsetX.set(offsetX.get_untracked() + offsetChangeX);
+        offsetY.set(offsetY.get_untracked() + offsetChangeY);
         reset_drag();
     };
 
@@ -253,7 +263,7 @@ pub fn CanvasForever(
         }
     };
     let _ = create_effect(move |_| {
-        if canvasRef.get().is_some() && mounted.get() == false {
+        if canvasRef.get().is_some() && !mounted.get() {
             let canvas = canvasRef.get().unwrap();
             canvas.set_width(width as u32);
             canvas.set_height(height as u32);
@@ -275,7 +285,7 @@ pub fn CanvasForever(
                 let mut newConnections = connections.get();
                 let newConnection = ConnectionItem {
                     key: connections.get().len().to_string(),
-                    from: from,
+                    from,
                     to: moveBoxItem,
                 };
                 newConnections.push(create_rw_signal(newConnection));

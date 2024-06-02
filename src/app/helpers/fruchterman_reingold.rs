@@ -38,9 +38,12 @@ impl Graph {
             })
             .collect();
 
-        for (id1, id2) in &edges {
+        for (id1, _id2) in &edges {
             node_map.get_mut(id1).unwrap().degree += 1;
-            node_map.get_mut(id2).unwrap().degree += 1;
+        }
+
+        for (id1, id2) in &edges {
+            node_map.get_mut(id1).unwrap().degree += node_map.get_mut(id2).unwrap().degree;
         }
 
         let nodes: Vec<BoxNode> = node_map.values().cloned().collect();
@@ -76,10 +79,6 @@ impl Graph {
             dist * dist / k
         }
 
-        fn degree_force(degree: usize, y: f64, k: f64) -> f64 {
-            (degree as f64) * k - y
-        }
-
         for _ in 0..iterations {
             for node in &mut self.nodes {
                 node.disp = Position { x: 0.0, y: 0.0 };
@@ -102,7 +101,7 @@ impl Graph {
                 }
             }
 
-            for &(ref id1, ref id2) in &self.edges {
+            for (id1, id2) in &self.edges {
                 let index1 = self.node_indices[id1];
                 let index2 = self.node_indices[id2];
                 let [node1, node2] = self
@@ -133,15 +132,12 @@ impl Graph {
                 if dist > 0.0 {
                     node.pos.x += (node.disp.x / dist) * dist.min(speed);
                     node.pos.y += (node.disp.y / dist) * dist.min(speed);
-                    if (dist > max_disp) {
+                    if dist > max_disp {
                         max_disp = dist;
                     }
                 }
                 node.pos.x += (0.0 - node.pos.x) * gravity;
                 node.pos.y += (0.0 - node.pos.y) * gravity;
-
-                // Apply degree force to pull higher degree nodes upwards
-                node.pos.y += degree_force(node.degree, node.pos.y, k) * gravity;
             }
 
             if max_disp < tolerance {

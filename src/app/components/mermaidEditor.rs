@@ -22,7 +22,7 @@ pub fn MermaidEditor() -> impl IntoView {
         let Data = create_rw_signal(MoveBoxItem {
             attributes: create_rw_signal(vec![]),
             key: newString.clone(),
-            value: create_rw_signal(String::from(newMoveBoxes.len().to_string())),
+            value: create_rw_signal(newMoveBoxes.len().to_string()),
             position: create_rw_signal(nextPosition),
             realPosition: create_rw_signal(nextPosition),
             isDragging: create_rw_signal(false),
@@ -48,13 +48,13 @@ pub fn MermaidEditor() -> impl IntoView {
                     AddDiv(moveBoxes, nextPosition.get());
                     nextPosition
                         .set(Position {
-                            x: position.x.clone() + 50.0,
-                            y: position.y.clone() + 50.0,
+                            x: position.x + 50.0,
+                            y: position.y + 50.0,
                         });
                 }
 
                 text=Signal::derive(move || {
-                    format!("➕ {}", moveBoxes.get().len().to_string())
+                    format!("➕ {}", moveBoxes.get().len())
                 })
             />
 
@@ -64,7 +64,7 @@ pub fn MermaidEditor() -> impl IntoView {
                 }
 
                 text=Signal::derive(move || {
-                    if is_connecting.get() == true {
+                    if is_connecting.get() {
                         "↗️".to_string()
                     } else {
                         "🤚".to_string()
