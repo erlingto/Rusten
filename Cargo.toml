@@ -16,4 +16,5 @@ log = "0.4.20"
 rand = "0.8.5"
 styled = "0.2.0"
 stylist = "0.13.0"
+time = "0.3.36"
 web-sys = { features = ["CanvasRenderingContext2d"], version = "0.3.69" }
